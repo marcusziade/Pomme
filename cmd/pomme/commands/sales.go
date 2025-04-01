@@ -18,6 +18,48 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// SalesSummary represents a summary of sales for an app
+type SalesSummary struct {
+	AppName      string  `json:"appName"`
+	AppID        string  `json:"appID"`
+	Units        int     `json:"units"`
+	TotalProceeds float64 `json:"totalProceeds"`
+	Currency     string  `json:"currency"`
+}
+
+// createSalesSummary aggregates sales records into app summaries
+func createSalesSummary(records []models.SalesRecord) []SalesSummary {
+	// Map to track totals by app
+	summaryMap := make(map[string]*SalesSummary)
+	
+	for _, record := range records {
+		// Use AppleID as the key
+		key := record.AppleID
+		
+		// Create entry if it doesn't exist
+		if _, exists := summaryMap[key]; !exists {
+			summaryMap[key] = &SalesSummary{
+				AppName:  record.Title,
+				AppID:    record.AppleID,
+				Currency: record.CurrencyOfProceeds,
+			}
+		}
+		
+		// Update totals
+		summary := summaryMap[key]
+		summary.Units += record.Units
+		summary.TotalProceeds += record.DeveloperProceeds
+	}
+	
+	// Convert map to slice
+	result := make([]SalesSummary, 0, len(summaryMap))
+	for _, summary := range summaryMap {
+		result = append(result, *summary)
+	}
+	
+	return result
+}
+
 var salesCmd = &cobra.Command{
 	Use:   "sales",
 	Short: "Sales and financial reports",
