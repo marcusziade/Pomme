@@ -7,10 +7,10 @@ This guide will help you get up and running with Pomme quickly.
 Install Pomme using Go:
 
 ```bash
-go install github.com/marcus/pomme/cmd/pomme@latest
+go install github.com/marcusziade/pomme/cmd/pomme@latest
 ```
 
-Or download a pre-built binary from the [releases page](https://github.com/marcus/pomme/releases).
+Or download a pre-built binary from the [releases page](https://github.com/marcusziade/pomme/releases).
 
 ## Setup
 

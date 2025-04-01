@@ -3,7 +3,7 @@ package commands
 import (
 	"fmt"
 
-	"github.com/marcus/pomme/internal/config"
+	"github.com/marcusziade/pomme/internal/config"
 	"github.com/spf13/cobra"
 )
 

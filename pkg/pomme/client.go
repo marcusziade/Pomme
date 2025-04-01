@@ -14,9 +14,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/marcus/pomme/internal/api"
-	"github.com/marcus/pomme/internal/auth"
-	"github.com/marcus/pomme/internal/models"
+	"github.com/marcusziade/pomme/internal/api"
+	"github.com/marcusziade/pomme/internal/auth"
+	"github.com/marcusziade/pomme/internal/models"
 )
 
 // Client is a high-level client for the App Store Connect API
@@ -187,11 +187,11 @@ func (c *Client) GetSalesReport(
 				Detail string `json:"detail"`
 			} `json:"errors"`
 		}
-		
+
 		if err := json.Unmarshal(bodyBytes, &errorResp); err == nil && len(errorResp.Errors) > 0 {
 			// Special case for "no sales data"
-			if resp.StatusCode == 404 && errorResp.Errors[0].Code == "NOT_FOUND" && 
-			   strings.Contains(errorResp.Errors[0].Detail, "no sales") {
+			if resp.StatusCode == 404 && errorResp.Errors[0].Code == "NOT_FOUND" &&
+				strings.Contains(errorResp.Errors[0].Detail, "no sales") {
 				// Return an empty report instead of an error
 				fmt.Println("No sales data found for the specified period.")
 				// Return empty CSV with headers

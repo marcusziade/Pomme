@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/marcus/pomme/internal/auth"
+	"github.com/marcusziade/pomme/internal/auth"
 )
 
 // Client represents an App Store Connect API client

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/marcus/pomme/cmd/pomme/commands"
+	"github.com/marcusziade/pomme/cmd/pomme/commands"
 )
 
 func main() {

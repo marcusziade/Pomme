@@ -1,4 +1,4 @@
-module github.com/marcus/pomme
+module github.com/marcusziade/pomme
 
 go 1.21
 

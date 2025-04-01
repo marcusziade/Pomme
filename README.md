@@ -15,7 +15,7 @@ A powerful, production-ready App Store Connect CLI tool built with Go.
 
 ```bash
 # From binary releases
-curl -sfL https://raw.githubusercontent.com/marcus/pomme/master/scripts/install.sh | bash
+curl -sfL https://raw.githubusercontent.com/marcusziade/pomme/master/scripts/install.sh | bash
 ```
 
 ## Quick Start

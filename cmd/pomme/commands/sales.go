@@ -11,10 +11,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/marcus/pomme/internal/config"
-	"github.com/marcus/pomme/internal/models"
-	"github.com/marcus/pomme/internal/output"
-	"github.com/marcus/pomme/pkg/pomme"
+	"github.com/marcusziade/pomme/internal/config"
+	"github.com/marcusziade/pomme/internal/models"
+	"github.com/marcusziade/pomme/internal/output"
+	"github.com/marcusziade/pomme/pkg/pomme"
 	"github.com/spf13/cobra"
 )
 

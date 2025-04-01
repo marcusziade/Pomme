@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/marcus/pomme/internal/auth"
-	"github.com/marcus/pomme/internal/config"
+	"github.com/marcusziade/pomme/internal/auth"
+	"github.com/marcusziade/pomme/internal/config"
 	"github.com/spf13/cobra"
 )
 
