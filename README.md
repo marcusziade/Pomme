@@ -14,10 +14,8 @@ A powerful, production-ready App Store Connect CLI tool built with Go.
 ## Installation
 
 ```bash
-# Using Go
-go install github.com/marcus/pomme/cmd/pomme@latest
-
-# From binary releases (coming soon)
+# From binary releases
+curl -sfL https://raw.githubusercontent.com/marcus/pomme/master/scripts/install.sh | bash
 ```
 
 ## Quick Start
