@@ -29,6 +29,9 @@ pomme config init
 # Get your latest sales report
 pomme sales report --period=DAILY --date=latest
 
+# Show sales summary for the past month
+pomme sales monthly
+
 # List your apps
 pomme apps list
 

@@ -63,6 +63,12 @@ Get a specific sales report:
 pomme sales report --period=MONTHLY --date=2023-01 --type=SUBSCRIPTION
 ```
 
+Get a simple summary of the past month's sales:
+
+```bash
+pomme sales monthly
+```
+
 ### View Recent Reviews
 
 ```bash
