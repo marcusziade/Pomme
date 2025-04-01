@@ -30,8 +30,8 @@ func NewClient(baseURL string, authConfig auth.JWTConfig) *Client {
 	}
 }
 
-// getAuthToken returns a valid JWT token, generating a new one if needed
-func (c *Client) getAuthToken() (string, error) {
+// GetAuthToken returns a valid JWT token, generating a new one if needed
+func (c *Client) GetAuthToken() (string, error) {
 	// Check if we already have a valid token
 	if c.jwtToken != "" && time.Now().Before(c.tokenExpiry) {
 		return c.jwtToken, nil
@@ -70,7 +70,7 @@ func (c *Client) Request(ctx context.Context, method, path string, body io.Reade
 	req.Header.Set("User-Agent", "pomme-cli/1.0")
 
 	// Add authorization token
-	token, err := c.getAuthToken()
+	token, err := c.GetAuthToken()
 	if err != nil {
 		return nil, err
 	}
