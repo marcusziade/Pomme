@@ -36,8 +36,8 @@ func Load() (*Config, error) {
 	configName := "pomme"
 	configType := "yaml"
 	configPaths := []string{
-		".",                                   // Current directory
-		filepath.Join(configHome, "pomme"),  // User config directory
+		".",                                // Current directory
+		filepath.Join(configHome, "pomme"), // User config directory
 	}
 
 	// Configure viper
@@ -53,6 +53,7 @@ func Load() (*Config, error) {
 	v.SetDefault("api.base_url", "https://api.appstoreconnect.apple.com/v1")
 	v.SetDefault("api.timeout", 30) // 30 seconds
 	v.SetDefault("defaults.output_format", "table")
+	v.SetDefault("defaults.vendor_number", "")
 
 	// Read environment variables
 	v.SetEnvPrefix("POMME")
@@ -86,7 +87,7 @@ func InitConfig(configPath string) error {
 	}
 
 	// Ensure the directory exists
-	if err := os.MkdirAll(configPath, 0755); err != nil {
+	if err := os.MkdirAll(configPath, 0o755); err != nil {
 		return fmt.Errorf("could not create config directory: %w", err)
 	}
 

@@ -71,19 +71,29 @@ JWT token generated: eyJhbGciOi...
 
 ## Troubleshooting
 
-### Invalid Authentication
+### Invalid Authentication (NOT_AUTHORIZED Error)
 
 If you see an error like:
 
 ```
-API Error [INVALID_AUTH]: Authentication failed - The provided authentication is invalid (Status: 401)
+API Error [NOT_AUTHORIZED]: Provide a properly configured and signed bearer token, and make sure that it has not expired.
 ```
 
 Check that:
 
-1. Your Key ID and Issuer ID are correct
+1. Your Key ID and Issuer ID are correct and match exactly what's shown in App Store Connect
 2. The private key file path is correct and the file is readable
 3. Your API key hasn't expired or been revoked in App Store Connect
+4. The vendor number in your config is correct (find this in App Store Connect > Agreements, Tax, and Banking)
+5. The private key file (.p8) is in the correct format and contains the headers:
+   ```
+   -----BEGIN PRIVATE KEY-----
+   ...key content...
+   -----END PRIVATE KEY-----
+   ```
+6. Make sure your system clock is accurate, as time skew can affect JWT token validation
+7. If you recently created your API key, there could be a propagation delay - wait a few minutes and try again
+8. Try generating a new API key in App Store Connect and update your config with the new credentials
 
 ### Permission Issues
 

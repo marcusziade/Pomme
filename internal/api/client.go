@@ -22,6 +22,7 @@ type Client struct {
 
 // NewClient creates a new App Store Connect API client
 func NewClient(baseURL string, authConfig auth.JWTConfig) *Client {
+	fmt.Printf("Debug: Creating new API client with baseURL: %s\n", baseURL)
 	return &Client{
 		BaseURL:    baseURL,
 		HTTPClient: &http.Client{Timeout: 30 * time.Second},
@@ -53,6 +54,7 @@ func (c *Client) getAuthToken() (string, error) {
 func (c *Client) Request(ctx context.Context, method, path string, body io.Reader) (*http.Response, error) {
 	// Construct the full URL
 	url := fmt.Sprintf("%s%s", c.BaseURL, path)
+	fmt.Printf("Debug: Making %s request to %s\n", method, url)
 
 	// Create the request
 	req, err := http.NewRequestWithContext(ctx, method, url, body)
@@ -62,13 +64,19 @@ func (c *Client) Request(ctx context.Context, method, path string, body io.Reade
 
 	// Set request headers
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Accept", "application/json")
+	
+	// Additional headers for App Store Connect API
+	req.Header.Set("User-Agent", "pomme-cli/1.0")
 
 	// Add authorization token
 	token, err := c.getAuthToken()
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
+	authHeader := fmt.Sprintf("Bearer %s", token)
+	fmt.Printf("Debug: Setting Authorization header with token length: %d\n", len(token))
+	req.Header.Set("Authorization", authHeader)
 
 	// Send the request
 	resp, err := c.HTTPClient.Do(req)
@@ -80,6 +88,15 @@ func (c *Client) Request(ctx context.Context, method, path string, body io.Reade
 	if resp.StatusCode >= 400 {
 		defer resp.Body.Close()
 		
+		// Read the full response body for debugging
+		bodyBytes, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return nil, fmt.Errorf("API request failed with status: %s (failed to read response body: %v)", resp.Status, err)
+		}
+		
+		fmt.Printf("Debug: Error response body: %s\n", string(bodyBytes))
+		
+		// Try to parse as JSON error
 		var errResp struct {
 			Errors []struct {
 				Status string `json:"status"`
@@ -89,7 +106,7 @@ func (c *Client) Request(ctx context.Context, method, path string, body io.Reade
 			} `json:"errors"`
 		}
 		
-		if err := json.NewDecoder(resp.Body).Decode(&errResp); err == nil && len(errResp.Errors) > 0 {
+		if err := json.Unmarshal(bodyBytes, &errResp); err == nil && len(errResp.Errors) > 0 {
 			return nil, fmt.Errorf("API error: %s - %s", errResp.Errors[0].Code, errResp.Errors[0].Detail)
 		}
 		

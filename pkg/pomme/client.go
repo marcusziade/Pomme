@@ -13,11 +13,12 @@ import (
 
 // Client is a high-level client for the App Store Connect API
 type Client struct {
-	apiClient *api.Client
+	apiClient    *api.Client
+	vendorNumber string
 }
 
 // NewClient creates a new App Store Connect API client
-func NewClient(keyID, issuerID, privateKeyPEM string) *Client {
+func NewClient(keyID, issuerID, privateKeyPEM string, vendorNumber ...string) *Client {
 	// Create auth config
 	authConfig := auth.JWTConfig{
 		KeyID:         keyID,
@@ -28,18 +29,38 @@ func NewClient(keyID, issuerID, privateKeyPEM string) *Client {
 	// Create API client
 	apiClient := api.NewClient("https://api.appstoreconnect.apple.com/v1", authConfig)
 
-	return &Client{
+	// Initialize client
+	client := &Client{
 		apiClient: apiClient,
 	}
+	
+	// Set vendor number if provided
+	if len(vendorNumber) > 0 && vendorNumber[0] != "" {
+		client.vendorNumber = vendorNumber[0]
+	}
+
+	return client
 }
 
 // GetApps retrieves a list of apps
 func (c *Client) GetApps(ctx context.Context) (*models.AppsResponse, error) {
-	resp, err := c.apiClient.Get(ctx, "/apps")
+	// Print debug info
+	fmt.Println("Debug: Using Key ID:", c.apiClient.AuthConfig.KeyID)
+	fmt.Println("Debug: Using Issuer ID:", c.apiClient.AuthConfig.IssuerID)
+	fmt.Println("Debug: Private Key length:", len(c.apiClient.AuthConfig.PrivateKeyPEM))
+
+	// Use specific query parameters to make sure we're using the API correctly
+	query := "?limit=50&fields[apps]=name,bundleId,primaryLocale,sku"
+	resp, err := c.apiClient.Get(ctx, "/apps"+query)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get apps: %w", err)
 	}
 	defer resp.Body.Close()
+	
+	// Debug response
+	statusCode := resp.StatusCode
+	fmt.Printf("Debug: API response status code: %d\n", statusCode)
+	fmt.Printf("Debug: Response headers: %v\n", resp.Header)
 
 	var appsResp models.AppsResponse
 	if err := json.NewDecoder(resp.Body).Decode(&appsResp); err != nil {
