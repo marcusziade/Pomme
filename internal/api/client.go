@@ -22,7 +22,6 @@ type Client struct {
 
 // NewClient creates a new App Store Connect API client
 func NewClient(baseURL string, authConfig auth.JWTConfig) *Client {
-	fmt.Printf("Debug: Creating new API client with baseURL: %s\n", baseURL)
 	return &Client{
 		BaseURL:    baseURL,
 		HTTPClient: &http.Client{Timeout: 30 * time.Second},
@@ -75,7 +74,6 @@ func (c *Client) Request(ctx context.Context, method, path string, body io.Reade
 		return nil, err
 	}
 	authHeader := fmt.Sprintf("Bearer %s", token)
-	fmt.Printf("Debug: Setting Authorization header with token length: %d\n", len(token))
 	req.Header.Set("Authorization", authHeader)
 
 	// Send the request
@@ -93,8 +91,6 @@ func (c *Client) Request(ctx context.Context, method, path string, body io.Reade
 		if err != nil {
 			return nil, fmt.Errorf("API request failed with status: %s (failed to read response body: %v)", resp.Status, err)
 		}
-		
-		fmt.Printf("Debug: Error response body: %s\n", string(bodyBytes))
 		
 		// Try to parse as JSON error
 		var errResp struct {
