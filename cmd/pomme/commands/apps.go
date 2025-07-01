@@ -72,7 +72,7 @@ var appsListCmd = &cobra.Command{
 		}
 		
 		// Format and output apps
-		return formatter.Format(apps.Data)
+		return formatter.Format(apps)
 	},
 }
 
@@ -133,7 +133,7 @@ var appsInfoCmd = &cobra.Command{
 		}
 		
 		// Format and output app info
-		return formatter.Format(app.Data)
+		return formatter.Format(app)
 	},
 }
 

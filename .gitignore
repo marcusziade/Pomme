@@ -34,9 +34,9 @@ go.work
 # Local config for testing
 local_config.yaml
 
-# Compiled binaries
-pomme
+# Compiled binaries (only the binary, not the directory)
 /pomme
+!/cmd/pomme/
 
 # Test data files
 *.tsv
