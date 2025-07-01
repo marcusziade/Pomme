@@ -43,3 +43,7 @@ local_config.yaml
 
 # Claude directory
 .claude/
+
+# Python cache
+__pycache__/
+*.pyc
