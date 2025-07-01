@@ -228,3 +228,57 @@ auth:
 	fmt.Printf("Config file created at: %s\n", configFile)
 	return nil
 }
+
+// Save writes the config to the default location
+func Save(cfg *Config) (string, error) {
+	configHome, err := os.UserConfigDir()
+	if err != nil {
+		return "", fmt.Errorf("could not find user config directory: %w", err)
+	}
+	
+	configPath := filepath.Join(configHome, "pomme")
+	if err := os.MkdirAll(configPath, 0o755); err != nil {
+		return "", fmt.Errorf("could not create config directory: %w", err)
+	}
+	
+	configFile := filepath.Join(configPath, "pomme.yaml")
+	
+	// Format the config as YAML
+	content := fmt.Sprintf(`api:
+  base_url: %s
+  timeout: %d
+defaults:
+  output_format: %s
+  vendor_number: "%s"
+auth:
+  key_id: %s
+  issuer_id: %s
+  private_key_path: %s
+`,
+		cfg.API.BaseURL,
+		cfg.API.Timeout,
+		cfg.Defaults.OutputFormat,
+		cfg.Defaults.VendorNumber,
+		cfg.Auth.KeyID,
+		cfg.Auth.IssuerID,
+		cfg.Auth.PrivateKeyPath,
+	)
+	
+	if err := os.WriteFile(configFile, []byte(content), 0o644); err != nil {
+		return "", fmt.Errorf("could not write config file: %w", err)
+	}
+	
+	return configFile, nil
+}
+
+// GetConfigPath returns the path to the config file if it exists
+func GetConfigPath() string {
+	path := findConfigFile()
+	if path == "" {
+		// Return default location even if file doesn't exist
+		if configHome, err := os.UserConfigDir(); err == nil {
+			return filepath.Join(configHome, "pomme", "pomme.yaml")
+		}
+	}
+	return path
+}
