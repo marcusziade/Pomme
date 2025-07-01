@@ -33,3 +33,13 @@ go.work
 
 # Local config for testing
 local_config.yaml
+
+# Compiled binaries
+pomme
+/pomme
+
+# Test data files
+*.tsv
+
+# Claude directory
+.claude/
