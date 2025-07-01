@@ -46,25 +46,8 @@ var reviewsRespondCmd = &cobra.Command{
 	RunE:    runReviewsRespond,
 }
 
-var reviewsSearchCmd = &cobra.Command{
-	Use:     "search <app-id> <keyword>",
-	Short:   "Search reviews by keyword",
-	Long:    "Search through review titles and content for specific keywords",
-	Args:    cobra.ExactArgs(2),
-	RunE:    runReviewsSearch,
-}
-
-var reviewsWatchCmd = &cobra.Command{
-	Use:     "watch <app-id>",
-	Short:   "Watch for new reviews in real-time",
-	Long:    "Monitor and display new reviews as they arrive",
-	Args:    cobra.ExactArgs(1),
-	RunE:    runReviewsWatch,
-}
-
 var (
 	// Flags
-	reviewsTerritory string
 	reviewsRating    int
 	reviewsLimit     int
 	reviewsSort      string
@@ -76,21 +59,12 @@ func init() {
 	reviewsCmd.AddCommand(reviewsListCmd)
 	reviewsCmd.AddCommand(reviewsSummaryCmd)
 	reviewsCmd.AddCommand(reviewsRespondCmd)
-	reviewsCmd.AddCommand(reviewsSearchCmd)
-	reviewsCmd.AddCommand(reviewsWatchCmd)
 	
 	// Add flags for list command
-	reviewsListCmd.Flags().StringVar(&reviewsTerritory, "territory", "", "Filter by territory (e.g., US, GB, JP)")
 	reviewsListCmd.Flags().IntVar(&reviewsRating, "rating", 0, "Filter by rating (1-5)")
 	reviewsListCmd.Flags().IntVar(&reviewsLimit, "limit", 20, "Number of reviews to display")
 	reviewsListCmd.Flags().StringVar(&reviewsSort, "sort", "recent", "Sort order (recent, critical, helpful)")
 	reviewsListCmd.Flags().BoolVar(&reviewsVerbose, "verbose", false, "Show full review content")
-	
-	// Add flags for summary command
-	reviewsSummaryCmd.Flags().StringVar(&reviewsTerritory, "territory", "", "Filter by territory")
-	
-	// Add flags for watch command
-	reviewsWatchCmd.Flags().IntVar(&reviewsRating, "min-rating", 0, "Only show reviews with rating >= this value")
 }
 
 func runReviewsList(cmd *cobra.Command, args []string) error {
@@ -115,7 +89,6 @@ func runReviewsList(cmd *cobra.Command, args []string) error {
 	// Create filter
 	filter := models.ReviewFilter{
 		AppID:     appID,
-		Territory: reviewsTerritory,
 		Rating:    reviewsRating,
 		Limit:     reviewsLimit,
 		Sort:      reviewsSort,
@@ -197,52 +170,6 @@ func runReviewsRespond(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func runReviewsSearch(cmd *cobra.Command, args []string) error {
-	appID := args[0]
-	keyword := args[1]
-	
-	// Load config
-	cfg, err := config.Load()
-	if err != nil {
-		return fmt.Errorf("failed to load config: %w", err)
-	}
-
-	// Create client and service
-	apiClient, err := client.New(cfg)
-	if err != nil {
-		return fmt.Errorf("failed to create client: %w", err)
-	}
-	
-	svc := reviews.NewService(apiClient)
-	
-	fmt.Printf("🔍 Searching reviews for \"%s\" in app %s...\n\n", keyword, appID)
-	
-	// Search reviews
-	ctx := context.Background()
-	results, err := svc.SearchReviews(ctx, appID, keyword)
-	if err != nil {
-		return fmt.Errorf("failed to search reviews: %w", err)
-	}
-	
-	if len(results) == 0 {
-		fmt.Println("No reviews found matching your search.")
-		return nil
-	}
-	
-	fmt.Printf("Found %d reviews containing \"%s\":\n\n", len(results), keyword)
-	displayReviews(results, reviewsVerbose)
-	
-	return nil
-}
-
-func runReviewsWatch(cmd *cobra.Command, args []string) error {
-	appID := args[0]
-	
-	fmt.Printf("👀 Watching for new reviews on app %s...\n", appID)
-	fmt.Println("This feature is coming soon!")
-	
-	return nil
-}
 
 // displayReviews shows reviews in a formatted table
 func displayReviews(reviews []models.CustomerReview, verbose bool) {
