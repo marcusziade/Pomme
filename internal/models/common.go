@@ -70,3 +70,8 @@ const (
 	ReportFrequencyMonthly ReportFrequency = "MONTHLY"
 	ReportFrequencyYearly  ReportFrequency = "YEARLY"
 )
+
+// String returns the string representation of the frequency
+func (f ReportFrequency) String() string {
+	return string(f)
+}
