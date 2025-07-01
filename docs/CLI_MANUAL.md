@@ -39,9 +39,102 @@ go build -o pomme ./cmd/pomme/main.go
 ## Configuration
 
 <details>
-<summary>⚙️ Setting up Pomme</summary>
+<summary>🚀 Quick Start - Interactive Setup Wizard</summary>
 
-### Config File
+The easiest way to configure Pomme is using our interactive setup wizard:
+
+```bash
+pomme config init
+```
+
+This wizard will:
+- ✅ Guide you through creating an App Store Connect API key
+- ✅ Help you download and save your private key
+- ✅ Prompt for your credentials with examples
+- ✅ Automatically validate your configuration
+- ✅ Get you ready to use Pomme in 5 minutes!
+
+</details>
+
+<details>
+<summary>📋 Configuration Commands</summary>
+
+### Available Commands
+
+```bash
+# Interactive setup wizard (recommended for first-time users)
+pomme config init
+
+# View current configuration (credentials are masked)
+pomme config show
+
+# Validate your configuration
+pomme config validate
+
+# Show detailed setup instructions
+pomme config help
+```
+
+### Command Details
+
+#### `pomme config init`
+Interactive wizard that walks you through the entire setup process:
+- Opens relevant App Store Connect pages
+- Provides step-by-step instructions
+- Validates inputs as you go
+- Tests your connection before finishing
+
+#### `pomme config show`
+Displays your current configuration with sensitive values masked:
+```
+🔧 Current Configuration
+────────────────────────────────────────────────────────────
+
+Config file: /Users/john/.config/pomme/pomme.yaml
+
+API Settings:
+  Base URL: https://api.appstoreconnect.apple.com/v1
+  Timeout: 30 seconds
+
+Authentication:
+  Key ID: 73****5R
+  Issuer ID: a5****7b
+  Private Key: /Users/john/.config/pomme/AuthKey_73TT63DP5R.p8
+               ✓ File exists
+
+Defaults:
+  Output Format: table
+  Vendor Number: 93****63
+```
+
+#### `pomme config validate`
+Tests your configuration by:
+- Checking all required fields are set
+- Verifying your private key file exists
+- Testing API connection with your credentials
+- Providing clear error messages if something's wrong
+
+#### `pomme config help`
+Comprehensive guide showing:
+- How to create API keys in App Store Connect
+- Where to find each required value
+- Security best practices
+- Troubleshooting tips
+
+</details>
+
+<details>
+<summary>🔐 Manual Configuration</summary>
+
+### Config File Location
+
+Pomme looks for configuration in these locations (in order):
+1. `./pomme.yaml` (current directory)
+2. `~/.config/pomme/pomme.yaml` (recommended)
+3. `~/.pomme.yaml`
+4. Environment variables (with `POMME_` prefix)
+
+### Config File Format
 
 Create `~/.config/pomme/pomme.yaml`:
 
@@ -51,7 +144,7 @@ api:
   timeout: 30
 defaults:
   output_format: table
-  vendor_number: YOUR_VENDOR_NUMBER
+  vendor_number: YOUR_VENDOR_NUMBER  # Optional
 auth:
   key_id: YOUR_KEY_ID
   issuer_id: YOUR_ISSUER_ID
@@ -60,7 +153,7 @@ auth:
 
 ### Environment Variables
 
-Override config with environment variables:
+You can also use environment variables (useful for CI/CD):
 
 ```bash
 export POMME_AUTH_KEY_ID=YOUR_KEY_ID
@@ -69,12 +162,81 @@ export POMME_AUTH_PRIVATE_KEY_PATH=/path/to/key.p8
 export POMME_DEFAULTS_VENDOR_NUMBER=93036463
 ```
 
-### Getting API Keys
+Environment variables override values from the config file.
 
-1. Log in to [App Store Connect](https://appstoreconnect.apple.com)
-2. Go to Users and Access → Keys
-3. Create a new key with appropriate permissions
-4. Download the .p8 file and note the Key ID and Issuer ID
+</details>
+
+<details>
+<summary>🔑 Getting Your API Credentials</summary>
+
+### Step 1: Create an API Key
+
+1. Sign in to [App Store Connect](https://appstoreconnect.apple.com)
+2. Navigate to **Users and Access**
+3. Click **Keys** tab under "App Store Connect API"
+4. Click the **+** button to generate a new key
+5. Enter a name (e.g., "Pomme CLI")
+6. Choose access level:
+   - **Admin** - Full access (recommended)
+   - **Finance** - Sales reports only
+   - **Sales** - Limited sales access
+
+### Step 2: Download Your Private Key
+
+⚠️ **Important**: You can only download the private key once!
+
+1. Click **Generate**
+2. Click **Download API Key**
+3. Save the `.p8` file securely, for example:
+   - `~/.config/pomme/AuthKey_XXXXXXXXXX.p8`
+   - `~/Documents/AppStoreConnect/AuthKey_XXXXXXXXXX.p8`
+
+### Step 3: Note Your Credentials
+
+From the Keys page, you'll need:
+- **Key ID**: 10 characters (e.g., `73TT63DP5R`)
+- **Issuer ID**: UUID format (e.g., `a5ebdab5-0ceb-463c-8151-195b902f117b`)
+
+### Step 4: Find Your Vendor Number (Optional)
+
+1. Go to **Payments and Financial Reports**
+2. Your vendor number is displayed at the top
+3. Format: 8 digits (e.g., `93036463`)
+
+</details>
+
+<details>
+<summary>🛡️ Security Best Practices</summary>
+
+### Private Key Security
+
+- **Never commit** your `.p8` file to version control
+- **Store securely** in your home directory with restricted permissions:
+  ```bash
+  chmod 600 ~/.config/pomme/AuthKey_*.p8
+  ```
+- **Use environment variables** for CI/CD instead of files
+- **Rotate keys** periodically through App Store Connect
+
+### Access Control
+
+- Create keys with **minimum required permissions**
+- Use **Finance** role for sales-only access
+- **Revoke unused keys** in App Store Connect
+- Monitor key usage in your account
+
+### Configuration Security
+
+- Config file permissions:
+  ```bash
+  chmod 600 ~/.config/pomme/pomme.yaml
+  ```
+- Use `.gitignore` for local config files:
+  ```
+  pomme.yaml
+  .pomme.yaml
+  *.p8
+  ```
 
 </details>
 
