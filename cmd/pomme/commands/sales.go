@@ -1,392 +1,552 @@
 package commands
 
 import (
-	"bytes"
 	"context"
-	"encoding/csv"
 	"fmt"
-	"io"
 	"os"
-	"strconv"
 	"strings"
 	"time"
 
 	"github.com/marcusziade/pomme/internal/config"
 	"github.com/marcusziade/pomme/internal/models"
 	"github.com/marcusziade/pomme/internal/output"
+	"github.com/marcusziade/pomme/internal/services/cache"
+	"github.com/marcusziade/pomme/internal/services/sales"
 	"github.com/marcusziade/pomme/pkg/pomme"
 	"github.com/spf13/cobra"
 )
 
-// SalesSummary represents a summary of sales for an app
-type SalesSummary struct {
-	AppName      string  `json:"appName"`
-	AppID        string  `json:"appID"`
-	Units        int     `json:"units"`
-	TotalProceeds float64 `json:"totalProceeds"`
-	Currency     string  `json:"currency"`
-}
-
-// createSalesSummary aggregates sales records into app summaries
-func createSalesSummary(records []models.SalesRecord) []SalesSummary {
-	// Map to track totals by app
-	summaryMap := make(map[string]*SalesSummary)
-	
-	for _, record := range records {
-		// Use AppleID as the key
-		key := record.AppleID
-		
-		// Create entry if it doesn't exist
-		if _, exists := summaryMap[key]; !exists {
-			summaryMap[key] = &SalesSummary{
-				AppName:  record.Title,
-				AppID:    record.AppleID,
-				Currency: record.CurrencyOfProceeds,
-			}
-		}
-		
-		// Update totals
-		summary := summaryMap[key]
-		summary.Units += record.Units
-		summary.TotalProceeds += record.DeveloperProceeds
-	}
-	
-	// Convert map to slice
-	result := make([]SalesSummary, 0, len(summaryMap))
-	for _, summary := range summaryMap {
-		result = append(result, *summary)
-	}
-	
-	return result
-}
-
 var salesCmd = &cobra.Command{
 	Use:   "sales",
 	Short: "Sales and financial reports",
-	Long:  `Commands for retrieving and analyzing sales and financial reports.`,
+	Long: `Powerful sales reporting and analytics for your App Store apps.
+
+Examples:
+  # Show sales for the latest available month
+  pomme sales
+
+  # Show sales for a specific month
+  pomme sales --month 2025-03
+
+  # Compare two months
+  pomme sales compare --current 2025-03 --previous 2025-02
+
+  # Show trends over the last 6 months
+  pomme sales trends --months 6
+
+  # Export sales data
+  pomme sales export --month 2025-03 --format csv`,
 }
 
+// Main sales command - shows latest monthly report by default
 var salesReportCmd = &cobra.Command{
 	Use:   "report",
-	Short: "Get sales reports",
-	Long:  `Retrieves sales reports for your apps.`,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		// Get report parameters
-		periodStr, _ := cmd.Flags().GetString("period")
-		dateStr, _ := cmd.Flags().GetString("date")
-		vendorNumber, _ := cmd.Flags().GetString("vendor")
-		typeStr, _ := cmd.Flags().GetString("type")
-		_, _ = cmd.Flags().GetBool("summary") // We'll use this later when implementing summary display
-		
-		// Load config
-		cfg, err := config.Load()
-		if err != nil {
-			return fmt.Errorf("failed to load config: %w", err)
-		}
-		
-		// Use default vendor number if not provided
-		if vendorNumber == "" {
-			vendorNumber = cfg.Defaults.VendorNumber
-			if vendorNumber == "" {
-				return fmt.Errorf("vendor number is required, please provide with --vendor or set in config")
-			}
-		}
-		
-		// Convert period string to report frequency
-		var period models.ReportFrequency
-		switch strings.ToUpper(periodStr) {
-		case "DAILY":
-			period = models.ReportFrequencyDaily
-		case "WEEKLY":
-			period = models.ReportFrequencyWeekly
-		case "MONTHLY":
-			period = models.ReportFrequencyMonthly
-		case "YEARLY":
-			period = models.ReportFrequencyYearly
-		default:
-			return fmt.Errorf("invalid period: %s (must be DAILY, WEEKLY, MONTHLY, or YEARLY)", periodStr)
-		}
-		
-		// Handle "latest" date
-		if dateStr == "latest" {
-			// Use yesterday for daily reports, last week for weekly, etc.
-			now := time.Now().AddDate(0, 0, -1)
-			switch period {
-			case models.ReportFrequencyDaily:
-				dateStr = now.Format("2006-01-02")
-			case models.ReportFrequencyWeekly:
-				// Find the previous Saturday (Apple's week end)
-				daysSinceSaturday := (int(now.Weekday()) + 1) % 7
-				lastSaturday := now.AddDate(0, 0, -daysSinceSaturday)
-				dateStr = lastSaturday.Format("2006-01-02")
-			case models.ReportFrequencyMonthly:
-				// Previous month
-				lastMonth := now.AddDate(0, -1, 0)
-				dateStr = lastMonth.Format("2006-01")
-			case models.ReportFrequencyYearly:
-				// Previous year
-				lastYear := now.AddDate(-1, 0, 0)
-				dateStr = lastYear.Format("2006")
-			}
-		}
-		
-		// Convert report type string to ReportType
-		var reportType models.ReportType
-		switch strings.ToUpper(typeStr) {
-		case "SALES":
-			reportType = models.ReportTypeSales
-		case "SUBSCRIPTION":
-			reportType = models.ReportTypeSubscription
-		case "SUBSCRIPTION_EVENT":
-			reportType = models.ReportTypeSubscriptionEvent
-		default:
-			return fmt.Errorf("invalid report type: %s (must be SALES, SUBSCRIPTION, or SUBSCRIPTION_EVENT)", typeStr)
-		}
-		
-		// Validate config
-		if cfg.Auth.KeyID == "" {
-			return fmt.Errorf("key ID not set in config")
-		}
-		if cfg.Auth.IssuerID == "" {
-			return fmt.Errorf("issuer ID not set in config")
-		}
-		if cfg.Auth.PrivateKeyPath == "" {
-			return fmt.Errorf("private key path not set in config")
-		}
-		
-		// Read private key
-		privateKeyData, err := os.ReadFile(cfg.Auth.PrivateKeyPath)
-		if err != nil {
-			return fmt.Errorf("failed to read private key: %w", err)
-		}
-		
-		// Create client
-		client := pomme.NewClient(
-			cfg.Auth.KeyID,
-			cfg.Auth.IssuerID,
-			string(privateKeyData),
-		)
-		
-		// Fetch sales report
-		ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
-		defer cancel()
-		
-		fmt.Printf("Fetching %s %s report for %s...\n", 
-			strings.ToLower(string(period)), 
-			strings.ToLower(string(reportType)), 
-			dateStr)
-		
-		reportData, err := client.GetSalesReport(ctx, period, dateStr, reportType, vendorNumber)
-		if err != nil {
-			return fmt.Errorf("failed to get sales report: %w", err)
-		}
-		
-		// Write report data to stdout or file
-		if reportData != nil {
-			fmt.Println("Report successfully retrieved!")
-			fmt.Printf("Report size: %d bytes\n", len(reportData))
-			
-			// TODO: Parse and display report data based on format/summary flags
-		} else {
-			fmt.Println("No report data available for the specified period.")
-		}
-		
-		return nil
-	},
+	Short: "Get sales reports (default: latest monthly)",
+	Long: `Fetches and displays sales reports with automatic currency handling and insights.
+
+The command automatically handles Apple's 5-day report availability delay.`,
+	RunE:  runSalesReport,
 }
 
-var salesTrendsCmd = &cobra.Command{
-	Use:   "trends",
-	Short: "Analyze sales trends",
-	Long:  `Analyzes trends in your sales data.`,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		// TODO: Implement sales trends analysis
-		fmt.Println("Sales trends analysis will be implemented in a future version.")
-		return nil
-	},
-}
-
+// Quick monthly overview
 var salesMonthlyCmd = &cobra.Command{
-	Use:   "monthly",
-	Short: "Show sales for the past month",
-	Long:  `Shows a summary of sales for the past month, with a focus on apps that generated revenue.`,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		// Load config
-		cfg, err := config.Load()
-		if err != nil {
-			return fmt.Errorf("failed to load config: %w", err)
-		}
-		
-		// Calculate last month
-		now := time.Now()
-		lastMonth := now.AddDate(0, -1, 0)
-		monthStr := lastMonth.Format("2006-01")
-		
-		// Use default vendor number if available
-		vendorNumber := cfg.Defaults.VendorNumber
-		if vendorNumber == "" {
-			return fmt.Errorf("vendor number is required in config file")
-		}
-		
-		// Validate config
-		if cfg.Auth.KeyID == "" {
-			return fmt.Errorf("key ID not set in config")
-		}
-		if cfg.Auth.IssuerID == "" {
-			return fmt.Errorf("issuer ID not set in config")
-		}
-		if cfg.Auth.PrivateKeyPath == "" {
-			return fmt.Errorf("private key path not set in config")
-		}
-		
-		// Read private key
-		privateKeyData, err := os.ReadFile(cfg.Auth.PrivateKeyPath)
-		if err != nil {
-			return fmt.Errorf("failed to read private key: %w", err)
-		}
-		
-		// Create client
-		client := pomme.NewClient(
-			cfg.Auth.KeyID,
-			cfg.Auth.IssuerID,
-			string(privateKeyData),
-		)
-		
-		// Fetch sales report
-		ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
-		defer cancel()
-		
-		fmt.Printf("Fetching monthly sales report for %s...\n", monthStr)
-		
-		reportData, err := client.GetSalesReport(ctx, models.ReportFrequencyMonthly, monthStr, models.ReportTypeSales, vendorNumber)
-		if err != nil {
-			return fmt.Errorf("failed to get sales report: %w", err)
-		}
-		
-		// Process report data
-		if reportData != nil && len(reportData) > 0 {
-			// Parse the data as TSV
-			reader := csv.NewReader(bytes.NewReader(reportData))
-			reader.Comma = '\t' // Use tab as delimiter
-			
-			// Read header row
-			header, err := reader.Read()
-			if err != nil {
-				return fmt.Errorf("failed to read CSV header: %w", err)
-			}
-			
-			// Process records
-			var records []models.SalesRecord
-			
-			for {
-				row, err := reader.Read()
-				if err == io.EOF {
-					break
-				}
-				if err != nil {
-					return fmt.Errorf("failed to read CSV row: %w", err)
-				}
-				
-				// Create a map to easily access fields by header name
-				fields := make(map[string]string)
-				for i, h := range header {
-					if i < len(row) {
-						fields[h] = row[i]
-					}
-				}
-				
-				// Parse the record
-				var record models.SalesRecord
-				record.Provider = fields["Provider"]
-				record.ProviderCountry = fields["Provider Country"]
-				record.SKU = fields["SKU"]
-				record.Developer = fields["Developer"] 
-				record.Title = fields["Title"]
-				record.Version = fields["Version"]
-				record.ProductTypeID = fields["Product Type Identifier"]
-				record.AppleID = fields["Apple Identifier"]
-				record.CountryCode = fields["Country Code"]
-				record.CustomerCurrency = fields["Customer Currency"]
-				record.CurrencyOfProceeds = fields["Currency of Proceeds"]
-				record.BeginDate = fields["Begin Date"]
-				record.EndDate = fields["End Date"]
-				
-				// Parse numeric fields
-				units, _ := strconv.Atoi(fields["Units"])
-				record.Units = units
-				
-				customerPrice, _ := strconv.ParseFloat(fields["Customer Price"], 64)
-				record.CustomerPrice = customerPrice
-				
-				proceeds, _ := strconv.ParseFloat(fields["Developer Proceeds"], 64)
-				record.DeveloperProceeds = proceeds
-				
-				// Add additional fields
-				record.PromoCode = fields["Promo Code"]
-				record.ParentID = fields["Parent Identifier"]
-				record.Subscription = fields["Subscription"]
-				record.Period = fields["Period"]
-				record.Category = fields["Category"]
-				record.CMB = fields["CMB"]
-				record.DeviceType = fields["Device"]
-				record.SupportedPlatforms = fields["Supported Platforms"]
-				record.ProceedsReason = fields["Proceeds Reason"]
-				record.PreservedPricing = fields["Preserved Pricing"]
-				record.Client = fields["Client"]
-				record.OrderType = fields["Order Type"]
-				
-				// Keep records regardless of proceeds
-				records = append(records, record)
-			}
-			
-			// Create summary by aggregating data
-			summary := createSalesSummary(records)
-			
-			// Filter to only show apps with meaningful data
-			var meaningfulSummary []SalesSummary
-			for _, s := range summary {
-				// Include if there are units or proceeds
-				if s.Units > 0 {
-					meaningfulSummary = append(meaningfulSummary, s)
-				}
-			}
-			
-			if len(meaningfulSummary) > 0 {
-				// Sort by proceeds (highest first) before display
-				formatter := output.NewFormatter(output.FormatTable, os.Stdout)
-				if err := formatter.Format(meaningfulSummary); err != nil {
-					return fmt.Errorf("failed to format sales summary: %w", err)
-				}
-				
-				// Print a summary message
-				totalProceeds := 0.0
-				totalUnits := 0
-				for _, s := range meaningfulSummary {
-					totalProceeds += s.TotalProceeds
-					totalUnits += s.Units
-				}
-				
-				fmt.Printf("\nTotal: %d units, %.2f %s\n", totalUnits, totalProceeds, meaningfulSummary[0].Currency)
-			} else {
-				fmt.Println("No sales or downloads found for the past month.")
-			}
-		} else {
-			fmt.Println("No report data available for the specified period.")
-		}
-		
-		return nil
-	},
+	Use:     "monthly [YYYY-MM]",
+	Aliases: []string{"month", "m"},
+	Short:   "Quick monthly sales overview",
+	Example: `  pomme sales monthly           # Latest available month
+  pomme sales monthly 2025-03   # Specific month`,
+	RunE: runMonthlyReport,
+}
+
+// Compare periods
+var salesCompareCmd = &cobra.Command{
+	Use:     "compare",
+	Aliases: []string{"comp", "vs"},
+	Short:   "Compare sales between two periods",
+	Example: `  pomme sales compare --months 2   # Compare last 2 months
+  pomme sales compare --current 2025-03 --previous 2025-02`,
+	RunE: runCompare,
+}
+
+// Trend analysis
+var salesTrendsCmd = &cobra.Command{
+	Use:     "trends",
+	Aliases: []string{"trend", "t"},
+	Short:   "Analyze sales trends over time",
+	Example: `  pomme sales trends --months 6    # Last 6 months
+  pomme sales trends --quarters 4  # Last 4 quarters
+  pomme sales trends --years 2     # Last 2 years`,
+	RunE: runTrends,
+}
+
+// Export data
+var salesExportCmd = &cobra.Command{
+	Use:   "export",
+	Short: "Export sales data in various formats",
+	Example: `  pomme sales export --month 2025-03 --format csv
+  pomme sales export --last 3 --format excel
+  pomme sales export --year 2025 --format json`,
+	RunE: runExport,
+}
+
+// Watch for updates
+var salesWatchCmd = &cobra.Command{
+	Use:   "watch",
+	Short: "Watch for new sales data",
+	Long:  "Continuously monitors for new sales data and notifies when available.",
+	RunE:  runWatch,
 }
 
 func init() {
 	salesCmd.AddCommand(salesReportCmd)
-	salesCmd.AddCommand(salesTrendsCmd)
 	salesCmd.AddCommand(salesMonthlyCmd)
-	
-	// Add flags for sales report command
-	salesReportCmd.Flags().String("period", "DAILY", "Report period (DAILY, WEEKLY, MONTHLY, YEARLY)")
+	salesCmd.AddCommand(salesCompareCmd)
+	salesCmd.AddCommand(salesTrendsCmd)
+	salesCmd.AddCommand(salesExportCmd)
+	salesCmd.AddCommand(salesWatchCmd)
+
+	// Set monthly as the default when no subcommand is specified
+	salesCmd.RunE = runMonthlyReport
+
+	// Global flags
+	salesCmd.PersistentFlags().String("vendor", "", "Vendor number (default: from config)")
+	salesCmd.PersistentFlags().Bool("no-cache", false, "Skip cache and fetch fresh data")
+	salesCmd.PersistentFlags().Bool("json", false, "Output raw JSON")
+
+	// Report command flags
+	salesReportCmd.Flags().String("period", "MONTHLY", "Report period (DAILY, WEEKLY, MONTHLY, YEARLY)")
 	salesReportCmd.Flags().String("date", "latest", "Report date (YYYY-MM-DD or 'latest')")
-	salesReportCmd.Flags().String("vendor", "", "Vendor number (default: from config)")
 	salesReportCmd.Flags().String("type", "SALES", "Report type (SALES, SUBSCRIPTION, SUBSCRIPTION_EVENT)")
-	salesReportCmd.Flags().Bool("summary", false, "Show summary only")
+
+	// Monthly command flags
+	salesMonthlyCmd.Flags().Bool("details", false, "Show detailed breakdown")
+	salesMonthlyCmd.Flags().Bool("by-country", false, "Group by country")
+	salesMonthlyCmd.Flags().Bool("by-app", false, "Group by app")
+
+	// Compare command flags
+	salesCompareCmd.Flags().String("current", "", "Current period (YYYY-MM)")
+	salesCompareCmd.Flags().String("previous", "", "Previous period (YYYY-MM)")
+	salesCompareCmd.Flags().Int("months", 0, "Compare last N months")
+	salesCompareCmd.Flags().Bool("percentage", false, "Show percentage changes")
+
+	// Trends command flags
+	salesTrendsCmd.Flags().Int("months", 0, "Analyze last N months")
+	salesTrendsCmd.Flags().Int("quarters", 0, "Analyze last N quarters")
+	salesTrendsCmd.Flags().Int("years", 0, "Analyze last N years")
+	salesTrendsCmd.Flags().String("group", "total", "Group by (total, app, country, platform)")
+	salesTrendsCmd.Flags().Bool("chart", false, "Display ASCII chart")
+
+	// Export command flags
+	salesExportCmd.Flags().String("month", "", "Specific month (YYYY-MM)")
+	salesExportCmd.Flags().Int("last", 0, "Last N months")
+	salesExportCmd.Flags().String("year", "", "Full year (YYYY)")
+	salesExportCmd.Flags().String("format", "csv", "Export format (csv, json, excel)")
+	salesExportCmd.Flags().String("output", "", "Output file (default: stdout)")
+	salesExportCmd.Flags().Bool("detailed", false, "Include all transaction details")
+
+	// Watch command flags
+	salesWatchCmd.Flags().Duration("interval", 1*time.Hour, "Check interval")
+	salesWatchCmd.Flags().Bool("notify", false, "Send desktop notification")
+}
+
+func runMonthlyReport(cmd *cobra.Command, args []string) error {
+	ctx := context.Background()
+
+	// Parse month from args or flags
+	var targetMonth time.Time
+	if len(args) > 0 {
+		parsed, err := time.Parse("2006-01", args[0])
+		if err != nil {
+			return fmt.Errorf("invalid month format, use YYYY-MM: %w", err)
+		}
+		targetMonth = parsed
+	} else {
+		// Calculate the latest available month
+		targetMonth = calculateLatestAvailableMonth()
+	}
+
+	// Get configuration
+	cfg, service, err := setupSalesService(cmd)
+	if err != nil {
+		return err
+	}
+
+	// Create report options
+	options := sales.ReportOptions{
+		Period:       models.ReportFrequencyMonthly,
+		Date:         targetMonth,
+		ReportType:   models.ReportTypeSales,
+		VendorNumber: cfg.Defaults.VendorNumber,
+		NoCache:      mustGetBool(cmd, "no-cache"),
+		IncludeAnalysis: true,
+	}
+
+	// Show what we're fetching
+	fmt.Printf("📊 Fetching sales report for %s...\n", targetMonth.Format("January 2006"))
+
+	// Fetch the report
+	report, err := service.GetReport(ctx, options)
+	if err != nil {
+		return fmt.Errorf("failed to fetch report: %w", err)
+	}
+
+	if report == nil || len(report.Apps) == 0 {
+		fmt.Printf("\n❌ No sales data available for %s\n", targetMonth.Format("January 2006"))
+		
+		// Suggest checking other months
+		fmt.Println("\n💡 Try checking recent months:")
+		for i := 1; i <= 3; i++ {
+			suggestedMonth := targetMonth.AddDate(0, -i, 0)
+			fmt.Printf("   pomme sales monthly %s\n", suggestedMonth.Format("2006-01"))
+		}
+		return nil
+	}
+
+	// Display the report
+	if mustGetBool(cmd, "json") {
+		return output.JSON(report)
+	}
+
+	displayMonthlyReport(cmd, report)
+	return nil
+}
+
+func runSalesReport(cmd *cobra.Command, args []string) error {
+	ctx := context.Background()
+
+	// Get configuration
+	cfg, service, err := setupSalesService(cmd)
+	if err != nil {
+		return err
+	}
+
+	// Parse report options
+	period, err := parseReportPeriod(mustGetString(cmd, "period"))
+	if err != nil {
+		return err
+	}
+
+	date, err := parseReportDate(mustGetString(cmd, "date"), period)
+	if err != nil {
+		return err
+	}
+
+	reportType, err := parseReportType(mustGetString(cmd, "type"))
+	if err != nil {
+		return err
+	}
+
+	// Create report options
+	options := sales.ReportOptions{
+		Period:       period,
+		Date:         date,
+		ReportType:   reportType,
+		VendorNumber: getVendorNumber(cmd, cfg),
+		NoCache:      mustGetBool(cmd, "no-cache"),
+	}
+
+	// Fetch the report
+	report, err := service.GetReport(ctx, options)
+	if err != nil {
+		return fmt.Errorf("failed to fetch report: %w", err)
+	}
+
+	// Display the report
+	if mustGetBool(cmd, "json") {
+		return output.JSON(report)
+	}
+
+	displayDetailedReport(report)
+	return nil
+}
+
+func runCompare(cmd *cobra.Command, args []string) error {
+	ctx := context.Background()
+
+	cfg, service, err := setupSalesService(cmd)
+	if err != nil {
+		return err
+	}
+
+	// Determine periods to compare
+	var currentOpt, previousOpt sales.ReportOptions
+
+	if months := mustGetInt(cmd, "months"); months > 0 {
+		// Compare last N months
+		current := calculateLatestAvailableMonth()
+		previous := current.AddDate(0, -months, 0)
+
+		currentOpt = sales.ReportOptions{
+			Period:       models.ReportFrequencyMonthly,
+			Date:         current,
+			ReportType:   models.ReportTypeSales,
+			VendorNumber: getVendorNumber(cmd, cfg),
+		}
+
+		previousOpt = sales.ReportOptions{
+			Period:       models.ReportFrequencyMonthly,
+			Date:         previous,
+			ReportType:   models.ReportTypeSales,
+			VendorNumber: getVendorNumber(cmd, cfg),
+		}
+	} else {
+		// Use specific months
+		currentStr := mustGetString(cmd, "current")
+		previousStr := mustGetString(cmd, "previous")
+
+		if currentStr == "" || previousStr == "" {
+			return fmt.Errorf("specify either --months or both --current and --previous")
+		}
+
+		current, err := time.Parse("2006-01", currentStr)
+		if err != nil {
+			return fmt.Errorf("invalid current month: %w", err)
+		}
+
+		previous, err := time.Parse("2006-01", previousStr)
+		if err != nil {
+			return fmt.Errorf("invalid previous month: %w", err)
+		}
+
+		currentOpt = sales.ReportOptions{
+			Period:       models.ReportFrequencyMonthly,
+			Date:         current,
+			ReportType:   models.ReportTypeSales,
+			VendorNumber: getVendorNumber(cmd, cfg),
+		}
+
+		previousOpt = sales.ReportOptions{
+			Period:       models.ReportFrequencyMonthly,
+			Date:         previous,
+			ReportType:   models.ReportTypeSales,
+			VendorNumber: getVendorNumber(cmd, cfg),
+		}
+	}
+
+	fmt.Printf("📊 Comparing %s vs %s...\n", 
+		currentOpt.Date.Format("January 2006"),
+		previousOpt.Date.Format("January 2006"))
+
+	// Fetch comparison
+	comparison, err := service.GetComparison(ctx, currentOpt, previousOpt)
+	if err != nil {
+		return fmt.Errorf("failed to get comparison: %w", err)
+	}
+
+	// Display comparison
+	if mustGetBool(cmd, "json") {
+		return output.JSON(comparison)
+	}
+
+	displayComparison(cmd, comparison)
+	return nil
+}
+
+func runTrends(cmd *cobra.Command, args []string) error {
+	ctx := context.Background()
+
+	cfg, service, err := setupSalesService(cmd)
+	if err != nil {
+		return err
+	}
+
+	// Determine trend period
+	var trendOpt sales.TrendOptions
+
+	if months := mustGetInt(cmd, "months"); months > 0 {
+		trendOpt = sales.TrendOptions{
+			Frequency:    models.ReportFrequencyMonthly,
+			EndDate:      calculateLatestAvailableMonth(),
+			Periods:      months,
+			ReportType:   models.ReportTypeSales,
+			VendorNumber: getVendorNumber(cmd, cfg),
+			GroupBy:      mustGetString(cmd, "group"),
+		}
+	} else if quarters := mustGetInt(cmd, "quarters"); quarters > 0 {
+		// For quarters, we'll use monthly reports and aggregate
+		trendOpt = sales.TrendOptions{
+			Frequency:    models.ReportFrequencyMonthly,
+			EndDate:      calculateLatestAvailableMonth(),
+			Periods:      quarters * 3,
+			ReportType:   models.ReportTypeSales,
+			VendorNumber: getVendorNumber(cmd, cfg),
+			GroupBy:      mustGetString(cmd, "group"),
+		}
+	} else if years := mustGetInt(cmd, "years"); years > 0 {
+		trendOpt = sales.TrendOptions{
+			Frequency:    models.ReportFrequencyYearly,
+			EndDate:      time.Now().AddDate(-1, 0, 0), // Last complete year
+			Periods:      years,
+			ReportType:   models.ReportTypeSales,
+			VendorNumber: getVendorNumber(cmd, cfg),
+			GroupBy:      mustGetString(cmd, "group"),
+		}
+	} else {
+		// Default to last 6 months
+		trendOpt = sales.TrendOptions{
+			Frequency:    models.ReportFrequencyMonthly,
+			EndDate:      calculateLatestAvailableMonth(),
+			Periods:      6,
+			ReportType:   models.ReportTypeSales,
+			VendorNumber: getVendorNumber(cmd, cfg),
+			GroupBy:      mustGetString(cmd, "group"),
+		}
+	}
+
+	fmt.Printf("📈 Analyzing trends over %d %s...\n", trendOpt.Periods, trendOpt.Frequency)
+
+	// Fetch trends
+	trends, err := service.GetTrends(ctx, trendOpt)
+	if err != nil {
+		return fmt.Errorf("failed to analyze trends: %w", err)
+	}
+
+	// Display trends
+	if mustGetBool(cmd, "json") {
+		return output.JSON(trends)
+	}
+
+	displayTrendsReport(cmd, trends)
+	return nil
+}
+
+func runExport(cmd *cobra.Command, args []string) error {
+	// TODO: Implement export functionality
+	fmt.Println("Export functionality coming soon!")
+	return nil
+}
+
+func runWatch(cmd *cobra.Command, args []string) error {
+	// TODO: Implement watch functionality
+	fmt.Println("Watch functionality coming soon!")
+	return nil
+}
+
+// Helper functions
+
+func setupSalesService(cmd *cobra.Command) (*config.Config, *salesService, error) {
+	// Load config
+	cfg, err := config.Load()
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to load config: %w", err)
+	}
+
+	// Validate config
+	if cfg.Auth.KeyID == "" || cfg.Auth.IssuerID == "" || cfg.Auth.PrivateKeyPath == "" {
+		return nil, nil, fmt.Errorf("authentication not configured. Run 'pomme config init' first")
+	}
+
+	// Read private key
+	privateKeyData, err := os.ReadFile(cfg.Auth.PrivateKeyPath)
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to read private key: %w", err)
+	}
+
+	// Create client
+	client := pomme.NewClient(cfg.Auth.KeyID, cfg.Auth.IssuerID, string(privateKeyData))
+
+	// Create cache
+	cacheService := cache.NewMemoryCache()
+
+	// Create sales service
+	// For now, we'll use the client directly until we refactor the service layer
+	service := &salesService{
+		client: client,
+		cache:  cacheService,
+	}
+
+	return cfg, service, nil
+}
+
+func calculateLatestAvailableMonth() time.Time {
+	now := time.Now()
+	
+	// If we're within the first 5 days of the month, go back 2 months
+	if now.Day() <= 5 {
+		return now.AddDate(0, -2, 0)
+	}
+	
+	// Otherwise, last month's data should be available
+	return now.AddDate(0, -1, 0)
+}
+
+func parseReportPeriod(period string) (models.ReportFrequency, error) {
+	switch strings.ToUpper(period) {
+	case "DAILY", "D":
+		return models.ReportFrequencyDaily, nil
+	case "WEEKLY", "W":
+		return models.ReportFrequencyWeekly, nil
+	case "MONTHLY", "M":
+		return models.ReportFrequencyMonthly, nil
+	case "YEARLY", "Y":
+		return models.ReportFrequencyYearly, nil
+	default:
+		return "", fmt.Errorf("invalid period: %s", period)
+	}
+}
+
+func parseReportDate(dateStr string, period models.ReportFrequency) (time.Time, error) {
+	if dateStr == "latest" {
+		switch period {
+		case models.ReportFrequencyMonthly:
+			return calculateLatestAvailableMonth(), nil
+		case models.ReportFrequencyDaily:
+			return time.Now().AddDate(0, 0, -1), nil
+		case models.ReportFrequencyWeekly:
+			// Find last Saturday
+			now := time.Now()
+			daysSinceSaturday := (int(now.Weekday()) + 1) % 7
+			return now.AddDate(0, 0, -daysSinceSaturday), nil
+		case models.ReportFrequencyYearly:
+			return time.Now().AddDate(-1, 0, 0), nil
+		}
+	}
+
+	// Parse based on period
+	switch period {
+	case models.ReportFrequencyDaily, models.ReportFrequencyWeekly:
+		return time.Parse("2006-01-02", dateStr)
+	case models.ReportFrequencyMonthly:
+		return time.Parse("2006-01", dateStr)
+	case models.ReportFrequencyYearly:
+		return time.Parse("2006", dateStr)
+	default:
+		return time.Parse("2006-01-02", dateStr)
+	}
+}
+
+func parseReportType(typeStr string) (models.ReportType, error) {
+	switch strings.ToUpper(typeStr) {
+	case "SALES", "S":
+		return models.ReportTypeSales, nil
+	case "SUBSCRIPTION", "SUB":
+		return models.ReportTypeSubscription, nil
+	case "SUBSCRIPTION_EVENT", "SUB_EVENT":
+		return models.ReportTypeSubscriptionEvent, nil
+	default:
+		return "", fmt.Errorf("invalid report type: %s", typeStr)
+	}
+}
+
+func getVendorNumber(cmd *cobra.Command, cfg *config.Config) string {
+	if vendor := mustGetString(cmd, "vendor"); vendor != "" {
+		return vendor
+	}
+	return cfg.Defaults.VendorNumber
+}
+
+// Flag helper functions
+func mustGetString(cmd *cobra.Command, flag string) string {
+	val, _ := cmd.Flags().GetString(flag)
+	return val
+}
+
+func mustGetBool(cmd *cobra.Command, flag string) bool {
+	val, _ := cmd.Flags().GetBool(flag)
+	return val
+}
+
+func mustGetInt(cmd *cobra.Command, flag string) int {
+	val, _ := cmd.Flags().GetInt(flag)
+	return val
 }
