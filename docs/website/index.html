@@ -22,6 +22,7 @@
                 <span class="brand-name">Pomme</span>
             </div>
             <div class="nav-links">
+                <a href="#getting-started">Get Started</a>
                 <a href="#features">Features</a>
                 <a href="#demo">Demo</a>
                 <a href="#installation">Installation</a>
@@ -66,7 +67,7 @@
                 with style and ease. Built with Go for lightning-fast performance.
             </p>
             <div class="hero-actions">
-                <a href="#installation" class="btn btn-primary">Get Started</a>
+                <a href="#getting-started" class="btn btn-primary">Get Started in 5 Minutes</a>
                 <a href="#demo" class="btn btn-secondary">View Demo</a>
             </div>
             <div class="hero-terminal">
@@ -99,6 +100,188 @@
   <span class="cyan">142 markets</span>
 
 <span class="gray">Generated: 2024-12-15 09:23:41</span></span></code></pre>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Getting Started Section -->
+    <section id="getting-started" class="getting-started">
+        <div class="container">
+            <h2 class="section-title">Get Started in 5 Minutes</h2>
+            <p class="section-subtitle">Our interactive setup wizard makes configuration a breeze</p>
+            
+            <div class="setup-flow">
+                <div class="setup-step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h3>Install Pomme</h3>
+                        <p>Choose your preferred installation method</p>
+                        <div class="code-block">
+                            <pre><code># Quick install with Go
+go install github.com/marcusziade/pomme/cmd/pomme@latest
+
+# Or download the latest binary
+curl -L https://github.com/marcusziade/pomme/releases/latest/download/pomme_$(uname -s)_$(uname -m).tar.gz | tar xz</code></pre>
+                            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="setup-step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h3>Run Setup Wizard</h3>
+                        <p>Let our interactive wizard guide you through configuration</p>
+                        <div class="terminal-demo">
+                            <div class="terminal-header">
+                                <div class="terminal-buttons">
+                                    <span class="terminal-button red"></span>
+                                    <span class="terminal-button yellow"></span>
+                                    <span class="terminal-button green"></span>
+                                </div>
+                                <span class="terminal-title">pomme config init</span>
+                            </div>
+                            <div class="terminal-body">
+                                <pre><code><span class="prompt">$</span> pomme config init
+
+<span class="bold">🍎 Welcome to Pomme Setup Wizard</span>
+────────────────────────────────────────────────────────────
+
+This wizard will help you set up Pomme to work with your
+App Store Connect account. You'll need:
+
+  • An Apple Developer account
+  • Admin or Account Holder role in App Store Connect
+  • About 5 minutes to complete the setup
+
+Ready to begin? [Y/n]: <span class="green">y</span>
+
+<span class="bold">📋 Step 1: Create an API Key</span>
+────────────────────────────────────────────
+
+1. Open <span class="cyan">https://appstoreconnect.apple.com/access/api</span>
+2. Click the <span class="green">+</span> button to create a new key
+3. Give it a name like <span class="yellow">"Pomme CLI"</span>
+4. Choose <span class="yellow">"Admin"</span> access (or appropriate role)
+5. Click <span class="green">"Generate"</span>
+
+Have you created the API key? [y/N]: <span class="green">y</span></code></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="setup-step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h3>Enter Your Credentials</h3>
+                        <p>The wizard helps you find and enter the right values</p>
+                        <div class="config-visual">
+                            <div class="config-item">
+                                <div class="config-icon">🔑</div>
+                                <div class="config-details">
+                                    <h4>Key ID</h4>
+                                    <p>10-character identifier (e.g., 73TT63DP5R)</p>
+                                </div>
+                            </div>
+                            <div class="config-item">
+                                <div class="config-icon">🆔</div>
+                                <div class="config-details">
+                                    <h4>Issuer ID</h4>
+                                    <p>UUID from the Keys page</p>
+                                </div>
+                            </div>
+                            <div class="config-item">
+                                <div class="config-icon">📄</div>
+                                <div class="config-details">
+                                    <h4>Private Key</h4>
+                                    <p>Path to your downloaded .p8 file</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="setup-step">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h3>Automatic Validation</h3>
+                        <p>Pomme tests your configuration to ensure everything works</p>
+                        <div class="terminal-demo">
+                            <div class="terminal-header">
+                                <div class="terminal-buttons">
+                                    <span class="terminal-button red"></span>
+                                    <span class="terminal-button yellow"></span>
+                                    <span class="terminal-button green"></span>
+                                </div>
+                                <span class="terminal-title">Validation</span>
+                            </div>
+                            <div class="terminal-body">
+                                <pre><code><span class="bold">🧪 Validating Configuration</span>
+────────────────────────────────────────
+
+Checking config file... <span class="green">✓</span>
+Checking credentials... <span class="green">✓</span>
+Checking private key file... <span class="green">✓</span>
+Testing API connection... <span class="green">✓</span>
+
+<span class="green">✅ Configuration is valid!</span>
+
+You're all set to use Pomme. Try these commands:
+  • <span class="cyan">pomme sales</span> - View your sales reports
+  • <span class="cyan">pomme apps list</span> - List your apps</code></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="setup-features">
+                <h3>Setup Features</h3>
+                <div class="features-grid">
+                    <div class="setup-feature">
+                        <div class="feature-icon">🎯</div>
+                        <h4>Interactive Wizard</h4>
+                        <p>Step-by-step guidance with clear instructions at every stage</p>
+                    </div>
+                    <div class="setup-feature">
+                        <div class="feature-icon">🔍</div>
+                        <h4>Automatic Validation</h4>
+                        <p>Tests your credentials and connection before you start</p>
+                    </div>
+                    <div class="setup-feature">
+                        <div class="feature-icon">🛡️</div>
+                        <h4>Secure Storage</h4>
+                        <p>Credentials stored safely in your home directory</p>
+                    </div>
+                    <div class="setup-feature">
+                        <div class="feature-icon">📚</div>
+                        <h4>Built-in Help</h4>
+                        <p>Detailed instructions available with <code>pomme config help</code></p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="config-commands">
+                <h3>Configuration Commands</h3>
+                <div class="command-list">
+                    <div class="command-item">
+                        <code>pomme config init</code>
+                        <span>Interactive setup wizard</span>
+                    </div>
+                    <div class="command-item">
+                        <code>pomme config show</code>
+                        <span>View current configuration</span>
+                    </div>
+                    <div class="command-item">
+                        <code>pomme config validate</code>
+                        <span>Test your credentials</span>
+                    </div>
+                    <div class="command-item">
+                        <code>pomme config help</code>
+                        <span>Detailed setup guide</span>
+                    </div>
                 </div>
             </div>
         </div>
