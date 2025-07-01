@@ -4,76 +4,191 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-
-	"github.com/spf13/viper"
+	"strings"
 )
 
 // Config contains all the configuration settings for the application
 type Config struct {
-	Auth struct {
-		KeyID          string `mapstructure:"key_id"`
-		IssuerID       string `mapstructure:"issuer_id"`
-		PrivateKeyPath string `mapstructure:"private_key_path"`
-	}
-	API struct {
-		BaseURL string `mapstructure:"base_url"`
-		Timeout int    `mapstructure:"timeout"`
-	}
-	Defaults struct {
-		OutputFormat string `mapstructure:"output_format"`
-		VendorNumber string `mapstructure:"vendor_number"`
-	}
+	Auth     AuthConfig     `json:"auth"`
+	API      APIConfig      `json:"api"`
+	Defaults DefaultsConfig `json:"defaults"`
 }
 
-// Load reads in config file and ENV variables if set
+type AuthConfig struct {
+	KeyID          string `json:"key_id"`
+	IssuerID       string `json:"issuer_id"`
+	PrivateKeyPath string `json:"private_key_path"`
+}
+
+type APIConfig struct {
+	BaseURL string `json:"base_url"`
+	Timeout int    `json:"timeout"`
+}
+
+type DefaultsConfig struct {
+	OutputFormat string `json:"output_format"`
+	VendorNumber string `json:"vendor_number"`
+}
+
+// Load reads the config file and returns a Config struct
 func Load() (*Config, error) {
-	// Set up config file search paths
-	configHome, err := os.UserConfigDir()
+	// Default config
+	config := &Config{
+		API: APIConfig{
+			BaseURL: "https://api.appstoreconnect.apple.com/v1",
+			Timeout: 30,
+		},
+		Defaults: DefaultsConfig{
+			OutputFormat: "table",
+		},
+	}
+
+	// Find config file
+	configPath := findConfigFile()
+	if configPath == "" {
+		// No config file found, check environment variables
+		loadFromEnv(config)
+		return config, nil
+	}
+
+	// Read config file
+	data, err := os.ReadFile(configPath)
 	if err != nil {
-		return nil, fmt.Errorf("could not find user config directory: %w", err)
+		return nil, fmt.Errorf("error reading config file %s: %w", configPath, err)
 	}
 
-	configName := "pomme"
-	configType := "yaml"
-	configPaths := []string{
-		".",                                // Current directory
-		filepath.Join(configHome, "pomme"), // User config directory
+	// Parse YAML manually (simple format)
+	if err := parseYAML(data, config); err != nil {
+		return nil, fmt.Errorf("error parsing config file %s: %w", configPath, err)
 	}
 
-	// Configure viper
-	v := viper.New()
-	v.SetConfigName(configName)
-	v.SetConfigType(configType)
+	// Override with environment variables
+	loadFromEnv(config)
 
-	for _, path := range configPaths {
-		v.AddConfigPath(path)
+	return config, nil
+}
+
+// findConfigFile looks for the config file in standard locations
+func findConfigFile() string {
+	// Check locations in order
+	locations := []string{
+		"pomme.yaml",
+		"pomme.yml",
+		".pomme.yaml",
+		".pomme.yml",
 	}
 
-	// Set default values
-	v.SetDefault("api.base_url", "https://api.appstoreconnect.apple.com/v1")
-	v.SetDefault("api.timeout", 30) // 30 seconds
-	v.SetDefault("defaults.output_format", "table")
-	v.SetDefault("defaults.vendor_number", "")
-
-	// Read environment variables
-	v.SetEnvPrefix("POMME")
-	v.AutomaticEnv()
-
-	// Read the config file
-	if err := v.ReadInConfig(); err != nil {
-		// It's ok if config file doesn't exist
-		if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
-			return nil, fmt.Errorf("error reading config file: %w", err)
+	// Add user config directory
+	if configHome, err := os.UserConfigDir(); err == nil {
+		for _, name := range []string{"pomme.yaml", "pomme.yml"} {
+			locations = append(locations, filepath.Join(configHome, "pomme", name))
 		}
 	}
 
-	// Unmarshal config
-	var config Config
-	if err := v.Unmarshal(&config); err != nil {
-		return nil, fmt.Errorf("unable to decode config: %w", err)
+	// Add home directory
+	if home, err := os.UserHomeDir(); err == nil {
+		for _, name := range []string{".pomme.yaml", ".pomme.yml", ".config/pomme/pomme.yaml"} {
+			locations = append(locations, filepath.Join(home, name))
+		}
 	}
 
-	return &config, nil
+	// Check each location
+	for _, loc := range locations {
+		if info, err := os.Stat(loc); err == nil && !info.IsDir() {
+			return loc
+		}
+	}
+
+	return ""
+}
+
+// parseYAML parses a simple YAML format into the config struct
+func parseYAML(data []byte, config *Config) error {
+	lines := strings.Split(string(data), "\n")
+	section := ""
+	
+	for _, line := range lines {
+		line = strings.TrimSpace(line)
+		if line == "" || strings.HasPrefix(line, "#") {
+			continue
+		}
+
+		// Check for section headers
+		if !strings.HasPrefix(line, " ") && strings.HasSuffix(line, ":") {
+			section = strings.TrimSuffix(line, ":")
+			continue
+		}
+
+		// Parse key-value pairs
+		parts := strings.SplitN(line, ":", 2)
+		if len(parts) != 2 {
+			continue
+		}
+
+		key := strings.TrimSpace(parts[0])
+		value := strings.TrimSpace(parts[1])
+		// Remove quotes if present
+		value = strings.Trim(value, "\"'")
+
+		// Assign values based on section and key
+		switch section {
+		case "auth":
+			switch key {
+			case "key_id":
+				config.Auth.KeyID = value
+			case "issuer_id":
+				config.Auth.IssuerID = value
+			case "private_key_path":
+				config.Auth.PrivateKeyPath = value
+			}
+		case "api":
+			switch key {
+			case "base_url":
+				config.API.BaseURL = value
+			case "timeout":
+				fmt.Sscanf(value, "%d", &config.API.Timeout)
+			}
+		case "defaults":
+			switch key {
+			case "output_format":
+				config.Defaults.OutputFormat = value
+			case "vendor_number":
+				config.Defaults.VendorNumber = value
+			}
+		}
+	}
+
+	return nil
+}
+
+// loadFromEnv loads configuration from environment variables
+func loadFromEnv(config *Config) {
+	// Auth settings
+	if v := os.Getenv("POMME_AUTH_KEY_ID"); v != "" {
+		config.Auth.KeyID = v
+	}
+	if v := os.Getenv("POMME_AUTH_ISSUER_ID"); v != "" {
+		config.Auth.IssuerID = v
+	}
+	if v := os.Getenv("POMME_AUTH_PRIVATE_KEY_PATH"); v != "" {
+		config.Auth.PrivateKeyPath = v
+	}
+
+	// API settings
+	if v := os.Getenv("POMME_API_BASE_URL"); v != "" {
+		config.API.BaseURL = v
+	}
+	if v := os.Getenv("POMME_API_TIMEOUT"); v != "" {
+		fmt.Sscanf(v, "%d", &config.API.Timeout)
+	}
+
+	// Defaults
+	if v := os.Getenv("POMME_DEFAULTS_OUTPUT_FORMAT"); v != "" {
+		config.Defaults.OutputFormat = v
+	}
+	if v := os.Getenv("POMME_DEFAULTS_VENDOR_NUMBER"); v != "" {
+		config.Defaults.VendorNumber = v
+	}
 }
 
 // InitConfig creates a new config file with default values
@@ -92,20 +207,24 @@ func InitConfig(configPath string) error {
 	}
 
 	// Create a default config
-	v := viper.New()
-	v.SetConfigName("pomme")
-	v.SetConfigType("yaml")
-	v.AddConfigPath(configPath)
+	configFile := filepath.Join(configPath, "pomme.yaml")
+	
+	defaultConfig := `api:
+  base_url: https://api.appstoreconnect.apple.com/v1
+  timeout: 30
+defaults:
+  output_format: table
+  vendor_number: ""
+auth:
+  key_id: ""
+  issuer_id: ""
+  private_key_path: ""
+`
 
-	// Set default values
-	v.Set("api.base_url", "https://api.appstoreconnect.apple.com/v1")
-	v.Set("api.timeout", 30)
-	v.Set("defaults.output_format", "table")
-
-	// Write the config file
-	if err := v.SafeWriteConfig(); err != nil {
+	if err := os.WriteFile(configFile, []byte(defaultConfig), 0o644); err != nil {
 		return fmt.Errorf("could not write config file: %w", err)
 	}
 
+	fmt.Printf("Config file created at: %s\n", configFile)
 	return nil
 }
