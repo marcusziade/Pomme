@@ -450,9 +450,12 @@ body {
 
 .install-options {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
     gap: 2rem;
     margin-bottom: 3rem;
+    max-width: 1400px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .install-card {
@@ -468,35 +471,46 @@ body {
 
 .code-block {
     position: relative;
-    background: var(--surface);
-    border-radius: 0.5rem;
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0.75rem;
     overflow: hidden;
-    margin: 1rem 0;
+    margin: 1.5rem 0;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
 }
 
 .code-block pre {
-    padding: 1rem;
+    padding: 1.5rem 2rem;
     overflow-x: auto;
     margin: 0;
 }
 
 .code-block code {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 0.875rem;
+    font-size: 0.9rem;
     color: var(--text-primary);
+    line-height: 1.7;
+}
+
+.code-block code .comment {
+    color: var(--text-secondary);
+    font-style: italic;
 }
 
 .copy-btn {
     position: absolute;
-    top: 0.5rem;
-    right: 0.5rem;
-    padding: 0.25rem 0.75rem;
-    background: rgba(255, 255, 255, 0.1);
+    top: 0.75rem;
+    right: 0.75rem;
+    padding: 0.5rem 1rem;
+    background: rgba(255, 255, 255, 0.05);
     color: var(--text-secondary);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 0.25rem;
+    border-radius: 0.5rem;
     font-size: 0.75rem;
+    font-weight: 500;
     cursor: pointer;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     transition: all 0.3s ease;
 }
 

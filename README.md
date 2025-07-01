@@ -19,6 +19,10 @@ Beautiful App Store Connect CLI for sales reports, analytics, and reviews. Built
 ### 1. Install
 
 ```bash
+# With Homebrew (macOS)
+brew tap marcusziade/tap
+brew install pomme
+
 # With Go
 go install github.com/marcusziade/pomme/cmd/pomme@latest
 

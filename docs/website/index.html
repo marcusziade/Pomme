@@ -107,7 +107,11 @@
                         <h3>Install Pomme</h3>
                         <p>Choose your preferred installation method</p>
                         <div class="code-block">
-                            <pre><code># Quick install with Go
+                            <pre><code># Install with Homebrew (macOS)
+brew tap marcusziade/tap
+brew install pomme
+
+# Or install with Go
 go install github.com/marcusziade/pomme/cmd/pomme@latest
 
 # Or download the latest binary
@@ -569,6 +573,18 @@ other weather apps. Would love to see a one-time purchase option.
             <p class="section-subtitle">Get started in seconds</p>
 
             <div class="install-options">
+                <div class="install-card">
+                    <h3>Install with Homebrew</h3>
+                    <div class="code-block">
+                        <pre><code># Add the tap (one time only)
+brew tap marcusziade/tap
+
+# Install pomme
+brew install pomme</code></pre>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                </div>
+
                 <div class="install-card">
                     <h3>Install with Go</h3>
                     <div class="code-block">

@@ -1,3 +1,5 @@
+version: 2
+
 before:
   hooks:
     - go mod tidy
@@ -13,16 +15,17 @@ builds:
       - amd64
       - arm64
     main: ./cmd/pomme
+    binary: pomme
     ldflags:
       - -s -w -X main.version={{.Version}}
 
 archives:
-  - format: tar.gz
-    name_template: >-
+  - name_template: >-
       {{ .ProjectName }}_
       {{- title .Os }}_
       {{- if eq .Arch "amd64" }}x86_64
       {{- else }}{{ .Arch }}{{ end }}
+    format: tar.gz
     format_overrides:
       - goos: windows
         format: zip
@@ -41,3 +44,18 @@ checksum:
 
 release:
   name_template: "{{.Tag}}"
+
+brews:
+  - name: pomme
+    repository:
+      owner: marcusziade
+      name: homebrew-tap
+      token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
+    commit_author:
+      name: marcusziade
+      email: marcus@ziade.se
+    homepage: "https://github.com/marcusziade/pomme"
+    description: "A powerful CLI tool for App Store Connect analytics, sales reports, and app management"
+    license: "MIT"
+    test: |
+      system "#{bin}/pomme", "--version"
