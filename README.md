@@ -2,6 +2,8 @@
 
 A powerful, production-ready App Store Connect CLI tool built with Go.
 
+**[📖 View Documentation](https://marcusziade.github.io/pomme) | [🚀 Quick Start Guide](https://marcusziade.github.io/pomme#installation) | [⭐ Star on GitHub](https://github.com/marcusziade/pomme)**
+
 ```
    _____                              
   |  __ \                             
