@@ -137,43 +137,53 @@ document.addEventListener('DOMContentLoaded', () => {
         observer.observe(el);
     });
     
-    // Add typing effect to hero terminal
+    // Add typing effect to hero terminal - with mobile optimization
     const heroTerminal = document.querySelector('.hero-terminal .terminal-body code');
     if (heroTerminal) {
         const originalContent = heroTerminal.innerHTML;
         const parent = heroTerminal.parentElement;
         
-        // Set initial opacity to 0 to prevent flash
-        parent.style.opacity = '0';
+        // Check if mobile
+        const isMobile = window.innerWidth <= 768;
         
-        // Wait a moment for layout to stabilize
-        setTimeout(() => {
+        if (isMobile) {
+            // On mobile, skip animation to prevent jitter
             parent.style.opacity = '1';
-            parent.style.transition = 'opacity 0.5s ease';
-            heroTerminal.innerHTML = '';
+        } else {
+            // Desktop animation
+            parent.style.opacity = '0';
             
-            let index = 0;
-            const chunkSize = 20; // Type multiple characters at once for faster animation
-            const typeInterval = setInterval(() => {
-                if (index < originalContent.length) {
-                    const endIndex = Math.min(index + chunkSize, originalContent.length);
-                    heroTerminal.innerHTML = originalContent.substring(0, endIndex);
-                    index = endIndex;
-                } else {
-                    clearInterval(typeInterval);
-                }
-            }, 10); // Much faster typing with larger chunks
-        }, 100);
+            // Wait a moment for layout to stabilize
+            setTimeout(() => {
+                parent.style.opacity = '1';
+                parent.style.transition = 'opacity 0.5s ease';
+                heroTerminal.innerHTML = '';
+                
+                let index = 0;
+                const chunkSize = 20;
+                const typeInterval = setInterval(() => {
+                    if (index < originalContent.length) {
+                        const endIndex = Math.min(index + chunkSize, originalContent.length);
+                        heroTerminal.innerHTML = originalContent.substring(0, endIndex);
+                        index = endIndex;
+                    } else {
+                        clearInterval(typeInterval);
+                    }
+                }, 10);
+            }, 100);
+        }
     }
 });
 
-// Add parallax effect to hero section
+// Add parallax effect to hero section - disabled on mobile
 window.addEventListener('scroll', () => {
-    const scrolled = window.pageYOffset;
-    const hero = document.querySelector('.hero');
-    
-    if (hero) {
-        hero.style.transform = `translateY(${scrolled * 0.5}px)`;
+    if (window.innerWidth > 768) {
+        const scrolled = window.pageYOffset;
+        const hero = document.querySelector('.hero');
+        
+        if (hero) {
+            hero.style.transform = `translateY(${scrolled * 0.5}px)`;
+        }
     }
 });
 
