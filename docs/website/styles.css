@@ -669,6 +669,7 @@ body {
     bottom: -3rem;
     width: 2px;
     background: linear-gradient(180deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.1) 100%);
+    z-index: -1;
 }
 
 .step-number {
@@ -963,11 +964,11 @@ body {
         flex-direction: column;
         gap: 1rem;
         margin-bottom: 3rem;
+        padding-left: 0;
     }
     
     .setup-step:not(:last-child)::after {
-        left: 2rem;
-        top: 5rem;
+        display: none;
     }
     
     .step-number {
