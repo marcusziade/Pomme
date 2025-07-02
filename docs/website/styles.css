@@ -457,7 +457,7 @@ body {
 
 .install-options {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
     gap: 1.5rem;
     margin-bottom: 3rem;
     max-width: 1400px;
@@ -495,9 +495,10 @@ body {
 
 .code-block code {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 0.9rem;
+    font-size: 0.875rem;
     color: var(--text-primary);
     line-height: 1.7;
+    word-break: break-word;
 }
 
 .code-block code .comment {
@@ -979,14 +980,28 @@ body {
         font-size: 1.25rem;
     }
     
+    .install-options {
+        grid-template-columns: 1fr;
+        padding: 0;
+    }
+    
+    .install-card {
+        margin: 0 1rem;
+    }
+    
     .code-block {
         margin: 1rem 0;
-        font-size: 0.75rem;
     }
     
     .code-block pre {
         padding: 1rem;
         overflow-x: auto;
+    }
+    
+    .code-block code {
+        font-size: 0.75rem;
+        word-break: normal;
+        white-space: pre;
     }
     
     .copy-btn {

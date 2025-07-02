@@ -596,7 +596,8 @@ brew install pomme</code></pre>
                 <div class="install-card">
                     <h3>Install with Go</h3>
                     <div class="code-block">
-                        <pre><code>go install github.com/marcusziade/pomme/cmd/pomme@latest</code></pre>
+                        <pre><code># Install latest version
+go install github.com/marcusziade/pomme/cmd/pomme@latest</code></pre>
                         <button class="copy-btn" onclick="copyCode(this)">Copy</button>
                     </div>
                 </div>
@@ -604,7 +605,10 @@ brew install pomme</code></pre>
                 <div class="install-card">
                     <h3>Download Binary</h3>
                     <div class="code-block">
-                        <pre><code>curl -L https://github.com/marcusziade/pomme/releases/latest/download/pomme_$(uname -s)_$(uname -m).tar.gz | tar xz
+                        <pre><code># Download and extract latest release
+curl -L https://github.com/marcusziade/pomme/releases/latest/download/pomme_$(uname -s)_$(uname -m).tar.gz | tar xz
+
+# Move to system path
 sudo mv pomme /usr/local/bin/</code></pre>
                         <button class="copy-btn" onclick="copyCode(this)">Copy</button>
                     </div>
