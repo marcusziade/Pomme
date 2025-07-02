@@ -313,8 +313,6 @@ body {
     margin: 0 auto;
     border: 1px solid var(--border-color);
     transition: background 0.3s ease, box-shadow 0.3s ease;
-    transform: translateZ(0); /* Fix mobile jitter */
-    will-change: transform; /* Optimize for animations */
 }
 
 .demo-terminal, .terminal-demo {

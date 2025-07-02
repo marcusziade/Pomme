@@ -129,63 +129,16 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }, observerOptions);
     
-    // Observe all terminal elements
-    document.querySelectorAll('.hero-terminal, .demo-terminal, .feature-card').forEach(el => {
+    // Observe demo terminals and feature cards only (not hero terminal)
+    document.querySelectorAll('.demo-terminal, .feature-card').forEach(el => {
         el.style.opacity = '0';
         el.style.transform = 'translateY(20px)';
         el.style.transition = 'all 0.6s ease';
         observer.observe(el);
     });
-    
-    // Add typing effect to hero terminal - with mobile optimization
-    const heroTerminal = document.querySelector('.hero-terminal .terminal-body code');
-    if (heroTerminal) {
-        const originalContent = heroTerminal.innerHTML;
-        const parent = heroTerminal.parentElement;
-        
-        // Check if mobile
-        const isMobile = window.innerWidth <= 768;
-        
-        if (isMobile) {
-            // On mobile, skip animation to prevent jitter
-            parent.style.opacity = '1';
-        } else {
-            // Desktop animation
-            parent.style.opacity = '0';
-            
-            // Wait a moment for layout to stabilize
-            setTimeout(() => {
-                parent.style.opacity = '1';
-                parent.style.transition = 'opacity 0.5s ease';
-                heroTerminal.innerHTML = '';
-                
-                let index = 0;
-                const chunkSize = 20;
-                const typeInterval = setInterval(() => {
-                    if (index < originalContent.length) {
-                        const endIndex = Math.min(index + chunkSize, originalContent.length);
-                        heroTerminal.innerHTML = originalContent.substring(0, endIndex);
-                        index = endIndex;
-                    } else {
-                        clearInterval(typeInterval);
-                    }
-                }, 10);
-            }, 100);
-        }
-    }
 });
 
-// Add parallax effect to hero section - disabled on mobile
-window.addEventListener('scroll', () => {
-    if (window.innerWidth > 768) {
-        const scrolled = window.pageYOffset;
-        const hero = document.querySelector('.hero');
-        
-        if (hero) {
-            hero.style.transform = `translateY(${scrolled * 0.5}px)`;
-        }
-    }
-});
+// Remove parallax effect completely to prevent jitter
 
 // Add hover effect to feature cards
 document.querySelectorAll('.feature-card').forEach(card => {
