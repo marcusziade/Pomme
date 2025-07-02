@@ -455,26 +455,99 @@ body {
     background: var(--surface);
 }
 
-.install-options {
+.install-methods {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 1.5rem;
     margin-bottom: 3rem;
-    max-width: 1400px;
+    max-width: 1200px;
     margin-left: auto;
     margin-right: auto;
-    padding: 0 1rem;
 }
 
-.install-card {
+.install-method {
     background: var(--background);
-    padding: 2rem;
-    border-radius: 1rem;
     border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 1rem;
+    overflow: hidden;
+    position: relative;
 }
 
-.install-card h3 {
-    margin-bottom: 1rem;
+.method-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.method-icon {
+    font-size: 2.5rem;
+    line-height: 1;
+}
+
+.method-info h3 {
+    margin: 0;
+    font-size: 1.25rem;
+    color: var(--text-primary);
+}
+
+.method-info p {
+    margin: 0.25rem 0 0;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.method-commands {
+    padding: 1.5rem;
+    background: rgba(0, 0, 0, 0.4);
+}
+
+.command-line {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.command-line:last-child {
+    margin-bottom: 0;
+}
+
+.command-prefix {
+    color: var(--success);
+    font-weight: bold;
+    flex-shrink: 0;
+}
+
+.command-line code {
+    color: var(--text-primary);
+    font-size: 0.875rem;
+    word-break: break-all;
+    flex: 1;
+}
+
+.install-method .copy-btn {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    padding: 0.5rem 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-secondary);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    cursor: pointer;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+}
+
+.install-method .copy-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: var(--text-primary);
 }
 
 .code-block {
@@ -533,6 +606,64 @@ body {
     padding: 2rem;
     border-radius: 1rem;
     border: 1px solid rgba(255, 255, 255, 0.1);
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.config-section h3 {
+    margin-bottom: 1rem;
+}
+
+.config-section p {
+    color: var(--text-secondary);
+    margin-bottom: 1.5rem;
+}
+
+.config-section code {
+    background: var(--surface-light);
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.875rem;
+}
+
+.config-example {
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    position: relative;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.config-line {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.875rem;
+}
+
+.config-line:last-child {
+    margin-bottom: 0;
+}
+
+.config-line.indent-1 {
+    margin-left: 2rem;
+}
+
+.config-key {
+    color: #FF9500;
+}
+
+.config-value {
+    color: var(--success);
+}
+
+.config-example .copy-btn {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
 }
 
 /* CTA Section */
@@ -980,13 +1111,46 @@ body {
         font-size: 1.25rem;
     }
     
-    .install-options {
+    .install-methods {
         grid-template-columns: 1fr;
-        padding: 0;
+        gap: 1rem;
     }
     
-    .install-card {
-        margin: 0 1rem;
+    .method-header {
+        padding: 1.25rem;
+    }
+    
+    .method-icon {
+        font-size: 2rem;
+    }
+    
+    .method-info h3 {
+        font-size: 1.1rem;
+    }
+    
+    .method-commands {
+        padding: 1.25rem;
+    }
+    
+    .command-line {
+        flex-wrap: wrap;
+    }
+    
+    .command-line code {
+        font-size: 0.75rem;
+        word-break: break-word;
+    }
+    
+    .config-example {
+        padding: 1rem;
+    }
+    
+    .config-line {
+        font-size: 0.75rem;
+    }
+    
+    .config-line.indent-1 {
+        margin-left: 1.5rem;
     }
     
     .code-block {

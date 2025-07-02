@@ -34,6 +34,53 @@ function copyCode(button) {
     });
 }
 
+// Copy install commands functionality
+function copyInstallCommands(button) {
+    const commandsContainer = button.parentElement.querySelector('.method-commands');
+    const commands = Array.from(commandsContainer.querySelectorAll('code'))
+        .map(code => code.textContent)
+        .join('\n');
+    
+    navigator.clipboard.writeText(commands).then(() => {
+        const originalText = button.textContent;
+        button.textContent = 'Copied!';
+        button.style.background = 'rgba(52, 199, 89, 0.2)';
+        button.style.color = '#34C759';
+        
+        setTimeout(() => {
+            button.textContent = originalText;
+            button.style.background = '';
+            button.style.color = '';
+        }, 2000);
+    });
+}
+
+// Copy config functionality
+function copyConfig(button) {
+    const configContainer = button.parentElement;
+    const lines = Array.from(configContainer.querySelectorAll('.config-line'))
+        .map(line => {
+            const indent = line.classList.contains('indent-1') ? '  ' : '';
+            const key = line.querySelector('.config-key')?.textContent || '';
+            const value = line.querySelector('.config-value')?.textContent || '';
+            return indent + key + (value ? ' ' + value : '');
+        })
+        .join('\n');
+    
+    navigator.clipboard.writeText(lines).then(() => {
+        const originalText = button.textContent;
+        button.textContent = 'Copied!';
+        button.style.background = 'rgba(52, 199, 89, 0.2)';
+        button.style.color = '#34C759';
+        
+        setTimeout(() => {
+            button.textContent = originalText;
+            button.style.background = '';
+            button.style.color = '';
+        }, 2000);
+    });
+}
+
 // Smooth scrolling for navigation links
 document.addEventListener('DOMContentLoaded', () => {
     const links = document.querySelectorAll('a[href^="#"]');

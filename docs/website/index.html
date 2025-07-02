@@ -580,66 +580,134 @@ other weather apps. Would love to see a one-time purchase option.
             <h2 class="section-title">Quick Installation</h2>
             <p class="section-subtitle">Get started in seconds</p>
 
-            <div class="install-options">
-                <div class="install-card">
-                    <h3>Install with Homebrew</h3>
-                    <div class="code-block">
-                        <pre><code># Add the tap (one time only)
-brew tap marcusziade/tap
-
-# Install pomme
-brew install pomme</code></pre>
-                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+            <div class="install-methods">
+                <!-- macOS (Homebrew) -->
+                <div class="install-method">
+                    <div class="method-header">
+                        <div class="method-icon">🍺</div>
+                        <div class="method-info">
+                            <h3>macOS</h3>
+                            <p>via Homebrew</p>
+                        </div>
                     </div>
+                    <div class="method-commands">
+                        <div class="command-line">
+                            <span class="command-prefix">$</span>
+                            <code>brew tap marcusziade/tap</code>
+                        </div>
+                        <div class="command-line">
+                            <span class="command-prefix">$</span>
+                            <code>brew install pomme</code>
+                        </div>
+                    </div>
+                    <button class="copy-btn" onclick="copyInstallCommands(this)">Copy</button>
                 </div>
 
-                <div class="install-card">
-                    <h3>Install with Go</h3>
-                    <div class="code-block">
-                        <pre><code># Install latest version
-go install github.com/marcusziade/pomme/cmd/pomme@latest</code></pre>
-                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                <!-- Go Install -->
+                <div class="install-method">
+                    <div class="method-header">
+                        <div class="method-icon">🐹</div>
+                        <div class="method-info">
+                            <h3>Go Install</h3>
+                            <p>via go install</p>
+                        </div>
                     </div>
+                    <div class="method-commands">
+                        <div class="command-line">
+                            <span class="command-prefix">$</span>
+                            <code>go install github.com/marcusziade/pomme/cmd/pomme@latest</code>
+                        </div>
+                    </div>
+                    <button class="copy-btn" onclick="copyInstallCommands(this)">Copy</button>
                 </div>
 
-                <div class="install-card">
-                    <h3>Download Binary</h3>
-                    <div class="code-block">
-                        <pre><code># Download and extract latest release
-curl -L https://github.com/marcusziade/pomme/releases/latest/download/pomme_$(uname -s)_$(uname -m).tar.gz | tar xz
-
-# Move to system path
-sudo mv pomme /usr/local/bin/</code></pre>
-                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                <!-- Binary Download -->
+                <div class="install-method">
+                    <div class="method-header">
+                        <div class="method-icon">📦</div>
+                        <div class="method-info">
+                            <h3>Binary</h3>
+                            <p>Direct download</p>
+                        </div>
                     </div>
+                    <div class="method-commands">
+                        <div class="command-line">
+                            <span class="command-prefix">$</span>
+                            <code>curl -L https://github.com/marcusziade/pomme/releases/latest/download/pomme_$(uname -s)_$(uname -m).tar.gz | tar xz</code>
+                        </div>
+                        <div class="command-line">
+                            <span class="command-prefix">$</span>
+                            <code>sudo mv pomme /usr/local/bin/</code>
+                        </div>
+                    </div>
+                    <button class="copy-btn" onclick="copyInstallCommands(this)">Copy</button>
                 </div>
 
-                <div class="install-card">
-                    <h3>Build from Source</h3>
-                    <div class="code-block">
-                        <pre><code>git clone https://github.com/marcusziade/pomme.git
-cd pomme
-go build -o pomme ./cmd/pomme/main.go</code></pre>
-                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                <!-- Build from Source -->
+                <div class="install-method">
+                    <div class="method-header">
+                        <div class="method-icon">🔨</div>
+                        <div class="method-info">
+                            <h3>Source</h3>
+                            <p>Build yourself</p>
+                        </div>
                     </div>
+                    <div class="method-commands">
+                        <div class="command-line">
+                            <span class="command-prefix">$</span>
+                            <code>git clone https://github.com/marcusziade/pomme.git</code>
+                        </div>
+                        <div class="command-line">
+                            <span class="command-prefix">$</span>
+                            <code>cd pomme && go build -o pomme ./cmd/pomme/main.go</code>
+                        </div>
+                    </div>
+                    <button class="copy-btn" onclick="copyInstallCommands(this)">Copy</button>
                 </div>
             </div>
 
             <div class="config-section">
                 <h3>Configuration</h3>
-                <p>Create <code>~/.config/pomme/pomme.yaml</code> with your App Store Connect credentials:</p>
-                <div class="code-block">
-                    <pre><code>api:
-  base_url: https://api.appstoreconnect.apple.com/v1
-  timeout: 30
-defaults:
-  output_format: table
-  vendor_number: YOUR_VENDOR_NUMBER
-auth:
-  key_id: YOUR_KEY_ID
-  issuer_id: YOUR_ISSUER_ID
-  private_key_path: /path/to/your/AuthKey.p8</code></pre>
-                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                <p>Create your configuration file at <code>~/.config/pomme/pomme.yaml</code></p>
+                <div class="config-example">
+                    <div class="config-line">
+                        <span class="config-key">api:</span>
+                    </div>
+                    <div class="config-line indent-1">
+                        <span class="config-key">base_url:</span>
+                        <span class="config-value">https://api.appstoreconnect.apple.com/v1</span>
+                    </div>
+                    <div class="config-line indent-1">
+                        <span class="config-key">timeout:</span>
+                        <span class="config-value">30</span>
+                    </div>
+                    <div class="config-line">
+                        <span class="config-key">defaults:</span>
+                    </div>
+                    <div class="config-line indent-1">
+                        <span class="config-key">output_format:</span>
+                        <span class="config-value">table</span>
+                    </div>
+                    <div class="config-line indent-1">
+                        <span class="config-key">vendor_number:</span>
+                        <span class="config-value">YOUR_VENDOR_NUMBER</span>
+                    </div>
+                    <div class="config-line">
+                        <span class="config-key">auth:</span>
+                    </div>
+                    <div class="config-line indent-1">
+                        <span class="config-key">key_id:</span>
+                        <span class="config-value">YOUR_KEY_ID</span>
+                    </div>
+                    <div class="config-line indent-1">
+                        <span class="config-key">issuer_id:</span>
+                        <span class="config-value">YOUR_ISSUER_ID</span>
+                    </div>
+                    <div class="config-line indent-1">
+                        <span class="config-key">private_key_path:</span>
+                        <span class="config-value">/path/to/your/AuthKey.p8</span>
+                    </div>
+                    <button class="copy-btn" onclick="copyConfig(this)">Copy</button>
                 </div>
             </div>
         </div>
