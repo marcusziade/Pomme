@@ -1,4 +1,5 @@
 :root {
+    /* Dark theme (default) */
     --primary-color: #FF3B30;
     --secondary-color: #007AFF;
     --go-color: #00ADD8;
@@ -12,6 +13,66 @@
     --error: #FF3B30;
     --gradient-start: #FF3B30;
     --gradient-end: #007AFF;
+    
+    /* Terminal colors for dark theme */
+    --terminal-bg: #1C1C1E;
+    --terminal-header-bg: #2C2C2E;
+    --terminal-text: #FFFFFF;
+    --terminal-prompt: #34C759;
+    --terminal-output: #FFFFFF;
+    --terminal-cyan: #00BCD4;
+    --terminal-green: #34C759;
+    --terminal-yellow: #FF9500;
+    --terminal-gray: #8E8E93;
+    --terminal-red: #FF3B30;
+    
+    /* UI element colors */
+    --border-color: rgba(255, 255, 255, 0.1);
+    --hover-bg: rgba(255, 255, 255, 0.05);
+    --button-hover-bg: rgba(255, 255, 255, 0.2);
+    --code-bg: rgba(0, 0, 0, 0.6);
+    --navbar-bg: rgba(0, 0, 0, 0.8);
+    --navbar-bg-solid: rgba(0, 0, 0, 0.95);
+}
+
+/* Light theme - Solarized Light */
+@media (prefers-color-scheme: light) {
+    :root {
+        /* Main colors */
+        --primary-color: #dc322f;
+        --secondary-color: #268bd2;
+        --go-color: #2aa198;
+        --background: #fdf6e3;
+        --surface: #eee8d5;
+        --surface-light: #93a1a1;
+        --text-primary: #586e75;
+        --text-secondary: #93a1a1;
+        --success: #859900;
+        --warning: #b58900;
+        --error: #dc322f;
+        --gradient-start: #dc322f;
+        --gradient-end: #268bd2;
+        
+        /* Terminal colors for light theme - Solarized Light */
+        --terminal-bg: #fdf6e3;
+        --terminal-header-bg: #eee8d5;
+        --terminal-text: #657b83;
+        --terminal-prompt: #859900;
+        --terminal-output: #586e75;
+        --terminal-cyan: #2aa198;
+        --terminal-green: #859900;
+        --terminal-yellow: #b58900;
+        --terminal-gray: #93a1a1;
+        --terminal-red: #dc322f;
+        
+        /* UI element colors */
+        --border-color: rgba(101, 123, 131, 0.2);
+        --hover-bg: rgba(147, 161, 161, 0.1);
+        --button-hover-bg: rgba(147, 161, 161, 0.2);
+        --code-bg: rgba(238, 232, 213, 0.8);
+        --navbar-bg: rgba(253, 246, 227, 0.9);
+        --navbar-bg-solid: rgba(253, 246, 227, 0.98);
+    }
 }
 
 * {
@@ -27,6 +88,8 @@ body {
     line-height: 1.6;
     overflow-x: hidden;
     width: 100%;
+    font-weight: 300;
+    transition: background 0.3s ease, color 0.3s ease;
 }
 
 /* Navigation */
@@ -34,12 +97,13 @@ body {
     position: fixed;
     top: 0;
     width: 100%;
-    background: rgba(0, 0, 0, 0.8);
+    background: var(--navbar-bg);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid var(--border-color);
     z-index: 1000;
     padding: 1rem 0;
+    transition: background 0.3s ease;
 }
 
 .nav-container {
@@ -57,7 +121,7 @@ body {
     align-items: center;
     gap: 0.75rem;
     font-size: 1.25rem;
-    font-weight: 700;
+    font-weight: 400;
     text-decoration: none;
     color: var(--text-primary);
 }
@@ -72,6 +136,7 @@ body {
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+    font-weight: 400;
 }
 
 .nav-links {
@@ -89,7 +154,7 @@ body {
 .nav-links a {
     color: var(--text-secondary);
     text-decoration: none;
-    font-weight: 500;
+    font-weight: 300;
     transition: color 0.3s ease;
 }
 
@@ -162,9 +227,10 @@ body {
 
 .hero-title {
     font-size: 4rem;
-    font-weight: 800;
+    font-weight: 200;
     margin-bottom: 1.5rem;
     line-height: 1.1;
+    letter-spacing: -0.02em;
 }
 
 .gradient-text {
@@ -205,7 +271,7 @@ body {
 .btn {
     padding: 0.875rem 2rem;
     border-radius: 0.5rem;
-    font-weight: 600;
+    font-weight: 300;
     text-decoration: none;
     transition: all 0.3s ease;
     display: inline-flex;
@@ -227,7 +293,7 @@ body {
 .btn-secondary {
     background: var(--surface);
     color: var(--text-primary);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--border-color);
 }
 
 .btn-secondary:hover {
@@ -237,23 +303,26 @@ body {
 
 /* Terminal */
 .hero-terminal, .demo-terminal, .terminal-demo {
-    background: var(--surface);
+    background: var(--terminal-bg);
     border-radius: 0.75rem;
     overflow: hidden;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
     max-width: 800px;
     width: 100%;
     margin: 0 auto;
     min-height: 300px;
+    border: 1px solid var(--border-color);
+    transition: background 0.3s ease, box-shadow 0.3s ease;
 }
 
 .terminal-header {
-    background: var(--surface-light);
+    background: var(--terminal-header-bg);
     padding: 0.75rem 1rem;
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid var(--border-color);
+    transition: background 0.3s ease;
 }
 
 .terminal-buttons {
@@ -277,17 +346,19 @@ body {
     text-align: center;
     font-size: 0.875rem;
     color: var(--text-secondary);
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'JetBrainsMono Nerd Font', 'JetBrains Mono', monospace;
+    font-weight: 300;
 }
 
 .terminal-body {
     padding: 1rem;
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'JetBrainsMono Nerd Font', 'JetBrains Mono', monospace;
     font-size: 0.75rem;
     line-height: 1.6;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     max-width: 100%;
+    font-weight: 300;
 }
 
 .terminal-body pre {
@@ -295,27 +366,27 @@ body {
 }
 
 .terminal-body code {
-    color: var(--text-primary);
+    color: var(--terminal-text);
 }
 
 .prompt {
-    color: var(--success);
-    font-weight: bold;
+    color: var(--terminal-prompt);
+    font-weight: 500;
 }
 
 .output {
-    color: var(--text-primary);
+    color: var(--terminal-output);
 }
 
 .bold {
     font-weight: bold;
 }
 
-.cyan { color: #00BCD4; }
-.green { color: var(--success); }
-.yellow { color: var(--warning); }
-.gray { color: var(--text-secondary); }
-.red { color: var(--error); }
+.cyan { color: var(--terminal-cyan); }
+.green { color: var(--terminal-green); }
+.yellow { color: var(--terminal-yellow); }
+.gray { color: var(--terminal-gray); }
+.red { color: var(--terminal-red); }
 
 /* Features Section */
 .features {
@@ -330,13 +401,14 @@ body {
 
 .section-title {
     font-size: 3rem;
-    font-weight: 800;
+    font-weight: 200;
     text-align: center;
     margin-bottom: 1rem;
     background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+    letter-spacing: -0.02em;
 }
 
 .section-subtitle {
@@ -356,14 +428,14 @@ body {
     background: var(--surface);
     padding: 2rem;
     border-radius: 1rem;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--border-color);
     transition: all 0.3s ease;
 }
 
 .feature-card:hover {
     transform: translateY(-4px);
-    border-color: rgba(255, 255, 255, 0.2);
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    border-color: var(--text-secondary);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
 }
 
 .feature-icon {
@@ -417,10 +489,10 @@ body {
     padding: 0.75rem 1.5rem;
     background: var(--surface);
     color: var(--text-secondary);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--border-color);
     border-radius: 0.5rem;
     cursor: pointer;
-    font-weight: 500;
+    font-weight: 400;
     transition: all 0.3s ease;
 }
 
@@ -467,7 +539,7 @@ body {
 
 .install-method {
     background: var(--background);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--border-color);
     border-radius: 1rem;
     overflow: hidden;
     position: relative;
@@ -478,7 +550,7 @@ body {
     align-items: center;
     gap: 1rem;
     padding: 1.5rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid var(--border-color);
 }
 
 .method-icon {
@@ -500,7 +572,7 @@ body {
 
 .method-commands {
     padding: 1.5rem;
-    background: rgba(0, 0, 0, 0.4);
+    background: var(--code-bg);
 }
 
 .command-line {
@@ -508,7 +580,8 @@ body {
     align-items: center;
     gap: 0.75rem;
     margin-bottom: 0.75rem;
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'JetBrainsMono Nerd Font', 'JetBrains Mono', monospace;
+    font-weight: 300;
 }
 
 .command-line:last-child {
@@ -533,12 +606,12 @@ body {
     top: 1rem;
     right: 1rem;
     padding: 0.5rem 1rem;
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--hover-bg);
     color: var(--text-secondary);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--border-color);
     border-radius: 0.5rem;
     font-size: 0.75rem;
-    font-weight: 500;
+    font-weight: 400;
     cursor: pointer;
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
@@ -546,18 +619,18 @@ body {
 }
 
 .install-method .copy-btn:hover {
-    background: rgba(255, 255, 255, 0.2);
+    background: var(--button-hover-bg);
     color: var(--text-primary);
 }
 
 .code-block {
     position: relative;
-    background: rgba(0, 0, 0, 0.6);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--code-bg);
+    border: 1px solid var(--border-color);
     border-radius: 0.75rem;
     overflow: hidden;
     margin: 1.5rem 0;
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
 }
 
 .code-block pre {
@@ -584,12 +657,12 @@ body {
     top: 0.75rem;
     right: 0.75rem;
     padding: 0.5rem 1rem;
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--hover-bg);
     color: var(--text-secondary);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--border-color);
     border-radius: 0.5rem;
     font-size: 0.75rem;
-    font-weight: 500;
+    font-weight: 400;
     cursor: pointer;
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
@@ -597,7 +670,7 @@ body {
 }
 
 .copy-btn:hover {
-    background: rgba(255, 255, 255, 0.2);
+    background: var(--button-hover-bg);
     color: var(--text-primary);
 }
 
@@ -605,7 +678,7 @@ body {
     background: var(--background);
     padding: 2rem;
     border-radius: 1rem;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--border-color);
     max-width: 800px;
     margin: 0 auto;
 }
@@ -620,20 +693,22 @@ body {
 }
 
 .config-section code {
-    background: var(--surface-light);
+    background: var(--surface);
     padding: 0.25rem 0.5rem;
     border-radius: 0.25rem;
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'JetBrainsMono Nerd Font', 'JetBrains Mono', monospace;
     font-size: 0.875rem;
+    font-weight: 300;
 }
 
 .config-example {
-    background: rgba(0, 0, 0, 0.6);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--code-bg);
+    border: 1px solid var(--border-color);
     border-radius: 0.75rem;
     padding: 1.5rem;
     position: relative;
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'JetBrainsMono Nerd Font', 'JetBrains Mono', monospace;
+    font-weight: 300;
 }
 
 .config-line {
@@ -701,7 +776,7 @@ body {
 .footer {
     background: var(--surface);
     padding: 4rem 2rem 2rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    border-top: 1px solid var(--border-color);
 }
 
 .footer-content {
@@ -760,13 +835,14 @@ body {
     background: var(--background);
     border-radius: 1rem;
     font-size: 0.875rem;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--border-color);
+    font-weight: 300;
 }
 
 .footer-bottom {
     text-align: center;
     padding-top: 2rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    border-top: 1px solid var(--border-color);
     color: var(--text-secondary);
 }
 
@@ -842,7 +918,7 @@ body {
     background: var(--surface);
     padding: 1.5rem;
     border-radius: 0.75rem;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--border-color);
     display: flex;
     gap: 1rem;
     align-items: center;
@@ -867,7 +943,7 @@ body {
     background: var(--surface);
     padding: 3rem;
     border-radius: 1rem;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--border-color);
 }
 
 .setup-features h3 {
@@ -915,12 +991,12 @@ body {
 }
 
 .command-item {
-    background: rgba(0, 0, 0, 0.6);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--code-bg);
+    border: 1px solid var(--border-color);
     border-radius: 0.75rem;
     overflow: hidden;
     position: relative;
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
 }
 
 .command-item-content {
@@ -932,10 +1008,11 @@ body {
 }
 
 .command-item code {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'JetBrainsMono Nerd Font', 'JetBrains Mono', monospace;
     font-size: 0.9rem;
     color: var(--text-primary);
     white-space: nowrap;
+    font-weight: 300;
 }
 
 .command-item span {
@@ -1220,4 +1297,53 @@ body {
     .hero-terminal {
         margin-top: 2rem;
     }
+}
+
+/* Light mode specific adjustments */
+@media (prefers-color-scheme: light) {
+    .btn-primary {
+        box-shadow: 0 4px 20px rgba(220, 50, 47, 0.2);
+    }
+    
+    .btn-primary:hover {
+        box-shadow: 0 6px 30px rgba(220, 50, 47, 0.3);
+    }
+    
+    .hero {
+        background: radial-gradient(ellipse at top, rgba(220, 50, 47, 0.05) 0%, transparent 50%),
+                    radial-gradient(ellipse at bottom, rgba(38, 139, 210, 0.05) 0%, transparent 50%);
+    }
+    
+    .terminal-demo, .demo-terminal, .hero-terminal {
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.05);
+    }
+    
+    .feature-card:hover {
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
+    }
+    
+    .code-block, .command-item {
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.03);
+    }
+    
+    .setup-step:not(:last-child)::after {
+        background: linear-gradient(180deg, rgba(101, 123, 131, 0.2) 0%, rgba(101, 123, 131, 0.1) 100%);
+    }
+}
+
+/* Font weight adjustments for ultra-thin design */
+h1, h2, h3, h4, h5, h6 {
+    font-weight: 200;
+}
+
+.bold {
+    font-weight: 500;
+}
+
+.feature-card h3 {
+    font-weight: 300;
+}
+
+.step-content h3 {
+    font-weight: 300;
 }
