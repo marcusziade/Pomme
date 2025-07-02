@@ -778,37 +778,39 @@ body {
 
 .command-list {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+    gap: 1.5rem;
 }
 
 .command-item {
-    background: var(--surface);
-    padding: 1.5rem;
-    border-radius: 0.5rem;
+    background: rgba(0, 0, 0, 0.6);
     border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0.75rem;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+}
+
+.command-item-content {
+    padding: 1.5rem 2rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    transition: all 0.3s ease;
-}
-
-.command-item:hover {
-    transform: translateY(-2px);
-    border-color: rgba(255, 255, 255, 0.2);
+    gap: 2rem;
 }
 
 .command-item code {
-    background: var(--surface-light);
-    padding: 0.25rem 0.75rem;
-    border-radius: 0.25rem;
     font-family: 'JetBrains Mono', monospace;
-    font-size: 0.875rem;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    white-space: nowrap;
 }
 
 .command-item span {
     color: var(--text-secondary);
     font-size: 0.875rem;
+    text-align: right;
+    flex-shrink: 0;
 }
 
 /* Additional mobile-specific improvements */
@@ -1000,10 +1002,15 @@ body {
         grid-template-columns: 1fr;
     }
     
-    .command-item {
+    .command-item-content {
         flex-direction: column;
-        gap: 0.5rem;
+        gap: 0.75rem;
         text-align: center;
+        padding: 1.25rem 1rem;
+    }
+    
+    .command-item code {
+        font-size: 0.85rem;
     }
     
     .footer-content {
