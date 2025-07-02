@@ -45,8 +45,8 @@
         --background: #fdf6e3;
         --surface: #eee8d5;
         --surface-light: #93a1a1;
-        --text-primary: #586e75;
-        --text-secondary: #93a1a1;
+        --text-primary: #073642;  /* Much darker for better readability */
+        --text-secondary: #586e75;  /* Darker secondary text */
         --success: #859900;
         --warning: #b58900;
         --error: #dc322f;
@@ -56,17 +56,17 @@
         /* Terminal colors for light theme - Solarized Light */
         --terminal-bg: #fdf6e3;
         --terminal-header-bg: #eee8d5;
-        --terminal-text: #657b83;
+        --terminal-text: #073642;  /* Darker terminal text */
         --terminal-prompt: #859900;
-        --terminal-output: #586e75;
+        --terminal-output: #073642;  /* Darker output text */
         --terminal-cyan: #2aa198;
         --terminal-green: #859900;
         --terminal-yellow: #b58900;
-        --terminal-gray: #93a1a1;
+        --terminal-gray: #586e75;  /* Darker gray */
         --terminal-red: #dc322f;
         
         /* UI element colors */
-        --border-color: rgba(101, 123, 131, 0.2);
+        --border-color: rgba(7, 54, 66, 0.15);  /* Adjusted for darker text */
         --hover-bg: rgba(147, 161, 161, 0.1);
         --button-hover-bg: rgba(147, 161, 161, 0.2);
         --code-bg: rgba(238, 232, 213, 0.8);
@@ -1315,19 +1315,44 @@ body {
     }
     
     .terminal-demo, .demo-terminal, .hero-terminal {
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.05);
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
     }
     
     .feature-card:hover {
-        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
     }
     
     .code-block, .command-item {
-        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.03);
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.05);
     }
     
     .setup-step:not(:last-child)::after {
-        background: linear-gradient(180deg, rgba(101, 123, 131, 0.2) 0%, rgba(101, 123, 131, 0.1) 100%);
+        background: linear-gradient(180deg, rgba(7, 54, 66, 0.15) 0%, rgba(7, 54, 66, 0.05) 100%);
+    }
+    
+    /* Slightly increase font weights in light mode for better readability */
+    body {
+        font-weight: 400;
+    }
+    
+    .hero-title {
+        font-weight: 300;
+    }
+    
+    .section-title {
+        font-weight: 300;
+    }
+    
+    .terminal-body {
+        font-weight: 400;
+    }
+    
+    .nav-links a {
+        font-weight: 400;
+    }
+    
+    .btn {
+        font-weight: 500;
     }
 }
 
