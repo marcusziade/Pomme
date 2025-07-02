@@ -94,17 +94,29 @@ document.addEventListener('DOMContentLoaded', () => {
     const heroTerminal = document.querySelector('.hero-terminal .terminal-body code');
     if (heroTerminal) {
         const originalContent = heroTerminal.innerHTML;
-        heroTerminal.innerHTML = '';
+        const parent = heroTerminal.parentElement;
         
-        let index = 0;
-        const typeInterval = setInterval(() => {
-            if (index < originalContent.length) {
-                heroTerminal.innerHTML = originalContent.substring(0, index + 1);
-                index++;
-            } else {
-                clearInterval(typeInterval);
-            }
-        }, 10);
+        // Set initial opacity to 0 to prevent flash
+        parent.style.opacity = '0';
+        
+        // Wait a moment for layout to stabilize
+        setTimeout(() => {
+            parent.style.opacity = '1';
+            parent.style.transition = 'opacity 0.5s ease';
+            heroTerminal.innerHTML = '';
+            
+            let index = 0;
+            const chunkSize = 20; // Type multiple characters at once for faster animation
+            const typeInterval = setInterval(() => {
+                if (index < originalContent.length) {
+                    const endIndex = Math.min(index + chunkSize, originalContent.length);
+                    heroTerminal.innerHTML = originalContent.substring(0, endIndex);
+                    index = endIndex;
+                } else {
+                    clearInterval(typeInterval);
+                }
+            }, 10); // Much faster typing with larger chunks
+        }, 100);
     }
 });
 
