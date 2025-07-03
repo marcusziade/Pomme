@@ -18,6 +18,21 @@ Beautiful App Store Connect CLI for sales reports, analytics, and reviews. Built
 
 ### 1. Install
 
+#### Arch Linux (AUR) - Recommended for Arch users
+
+```bash
+# Using yay
+yay -S pomme
+
+# Using paru
+paru -S pomme
+
+# For development version
+yay -S pomme-git
+```
+
+#### Other Installation Methods
+
 ```bash
 # With Homebrew (macOS)
 brew tap marcusziade/tap

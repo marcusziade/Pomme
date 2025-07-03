@@ -108,7 +108,12 @@
                         <h3>Install Pomme</h3>
                         <p>Choose your preferred installation method</p>
                         <div class="code-block">
-                            <pre><code># Install with Homebrew (macOS)
+                            <pre><code># Arch Linux (AUR) - Recommended for Arch users
+yay -S pomme
+# or: paru -S pomme
+# for development version: yay -S pomme-git
+
+# Install with Homebrew (macOS)
 brew tap marcusziade/tap
 brew install pomme
 
@@ -582,6 +587,32 @@ other weather apps. Would love to see a one-time purchase option.
             <p class="section-subtitle">Get started in seconds</p>
 
             <div class="install-methods">
+                <!-- Arch Linux (AUR) -->
+                <div class="install-method">
+                    <div class="method-header">
+                        <div class="method-icon">🐧</div>
+                        <div class="method-info">
+                            <h3>Arch Linux (AUR)</h3>
+                            <p>Recommended for Arch users</p>
+                        </div>
+                    </div>
+                    <div class="method-commands">
+                        <div class="command-line">
+                            <span class="command-prefix">$</span>
+                            <code>yay -S pomme</code>
+                        </div>
+                        <div class="command-line">
+                            <span class="command-prefix">#</span>
+                            <code>or using paru: paru -S pomme</code>
+                        </div>
+                        <div class="command-line">
+                            <span class="command-prefix">#</span>
+                            <code>for development version: yay -S pomme-git</code>
+                        </div>
+                    </div>
+                    <button class="copy-btn" onclick="copyInstallCommands(this)">Copy</button>
+                </div>
+
                 <!-- macOS (Homebrew) -->
                 <div class="install-method">
                     <div class="method-header">
