@@ -5,7 +5,7 @@ Beautiful App Store Connect CLI for sales reports, analytics, and reviews. Built
 [![Go Report Card](https://goreportcard.com/badge/github.com/marcusziade/pomme)](https://goreportcard.com/report/github.com/marcusziade/pomme)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-**[📖 Documentation](https://marcusziade.github.io/pomme) | [🚀 Get Started](https://marcusziade.github.io/pomme#getting-started) | [⭐ Star on GitHub](https://github.com/marcusziade/pomme)**
+**[📖 Documentation](https://marcusziade.github.io/Pomme) | [🚀 Get Started](https://marcusziade.github.io/Pomme#getting-started) | [⭐ Star on GitHub](https://github.com/marcusziade/Pomme)**
 
 ## ✨ Features
 
@@ -137,7 +137,7 @@ Rating Distribution
 ## 📚 Documentation
 
 - [CLI Manual](docs/CLI_MANUAL.md) - Comprehensive command reference
-- [Configuration Guide](https://marcusziade.github.io/pomme#getting-started) - Detailed setup instructions
+- [Configuration Guide](https://marcusziade.github.io/Pomme#getting-started) - Detailed setup instructions
 - [Development Notes](CLAUDE.md) - Architecture and contributing
 
 ## 🤝 Contributing
